@@ -1,4 +1,4 @@
-#!/usr/bin/perl -I /home/avincent/Desktop/script_luca_propre/bin
+#!/usr/bin/perl -I /home/lfreschi/tasks/pangenome/script_new/bin
 
 use LibFASTA;
 use Parallel::ForkManager;
@@ -71,7 +71,7 @@ $ref=&LibFASTA::read_FASTA("$genomes[0]"," ","1");
         if(exists($db_all_seq{$elem})){print "::[ERROR] Hey! There are two or more sequences with the same ID -- ID: $elem !\n";}
 
         $db_all_seq{$elem}{"seq"}=$current_hash{$elem};
-        $db_all_seq{$elem}{"gen"}=$genome;
+        $db_all_seq{$elem}{"gen"}=$genomes[0];
         push(@ids_first_genome,$elem);
 
     }
@@ -121,6 +121,10 @@ if($new_blasts > 0){
 
         $query=$data[0];
         $exclusion_zone{$query}=1;
+
+        $genome_q=$db_all_seq{$query}{"gen"};
+        #print $genome_q."\n";
+        $results{$query}{$genome_q}{$query}=1;
 
         if(exists($db_all_seq{$query})){
             $length_query=length($db_all_seq{$query}{"seq"});
@@ -294,6 +298,11 @@ if($new_blasts_iter2 > 0){
         $query=$data[0];
 
 
+        $genome_q=$db_all_seq{$query}{"gen"};
+        #print $genome_q."\n";
+        $results{$query}{$genome_q}{$query}=1;
+
+
         if(exists($db_all_seq{$query})){
             $length_query=length($db_all_seq{$query}{"seq"});
         }
@@ -351,8 +360,8 @@ if($new_blasts_iter2 > 0){
 
 
             if(exists($results{$entry}{$gen_id})){
-            $ref=$results{$entry}{$gen_id};
-            %hash_ref=%$ref;
+            $ref_r=$results{$entry}{$gen_id};
+            %hash_ref=%$ref_r;
 
 
             @hits=sort(keys(%hash_ref));

@@ -3,8 +3,23 @@
 use Parallel::ForkManager;
 use Getopt::Long;
 
+$dir_genomes="";
+$n_cpu=1;
 
 GetOptions ("d=s" => \$dir_genomes,"c=s"   => \$n_cpu) or die("::usage: $0 -d <dir_genomes> -c <n_cpu>\n");
+
+if(($dir_genomes eq "") or ((!(-e $dir_genomes)) or (!(-d $dir_genomes)))){
+    
+    if(!(-d $dir_genomes)){
+    print "::$dir_genomes is not a directory!\n";
+    exit();    
+    } 
+
+    print "::usage: $0 -d <dir_genomes> -c <n_cpu>\n";
+    exit();
+}
+
+
 
 $manager = new Parallel::ForkManager($n_cpu);
 
