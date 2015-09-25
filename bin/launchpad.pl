@@ -133,7 +133,6 @@ system("mv table_linked3.tsv matrix");
 system("mv binary_matrix.tsv matrix");
 system("mv binary_matrix.fasta matrix");
 system("rm *.udb");
-system("rm *.txt");
 system("rm *.fasta");
 system("rm *.tsv");
 
