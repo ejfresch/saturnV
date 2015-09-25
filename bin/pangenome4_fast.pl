@@ -29,6 +29,8 @@ for $genome (@genomes){
 }
 
 
+
+
 $first_genome=$genomes[0];
 
 #I perform the usearch searches
@@ -56,6 +58,8 @@ for $genome (@genomes[1..$#genomes]){
 
 
 $manager->wait_all_children;
+
+
 
 
 %db_all_seq=();
@@ -103,6 +107,7 @@ print "::analyzing the usearch output\n";
 
 
 if($new_blasts > 0){
+
 
     if(-e "all_blasted.txt"){`rm -rf all_blasted.txt`;}
     `cat *_blasted.txt > all_blasted.txt`;
@@ -356,7 +361,7 @@ if($new_blasts_iter2 > 0){
     foreach $entry (sort(keys(%new_sequences))){
 
 
-        #print $entry."\n";
+        #print OUT $entry."\n";
         @arr_to_print=();
 
 
@@ -385,6 +390,9 @@ if($new_blasts_iter2 > 0){
 
     }
     close(OUT);
+
+
+
 }
 else{
     print "::I have already made all the blasts of the second iteration. Everything is up-to-date! :)\n";

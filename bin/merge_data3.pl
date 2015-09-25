@@ -25,11 +25,22 @@ while($line=<IN>){
     @data=split(/\t/,$line); 
     %hash_line=();
     foreach $el (@data){
-        if($el ne "-"){        
-            $hash_line{$el}=1;
-        }    
+        @el_fragmented=split(/,/,$el);
+        foreach $fragment(@el_fragmented){
+            if($fragment ne "-"){        
+            $hash_line{$fragment}=1;
+            } 
+        }   
     }
-    $graph->add_path(keys(%hash_line));
+    @res_path=keys(%hash_line);
+
+    if($#res_path>0){
+        $graph->add_path(keys(%hash_line));
+    }
+    if($#res_path eq 0){
+        $graph->add_vertex($res_path[0]);
+    }
+
     $lines_read++;    
     print "-- $lines_read lines read\n";
     
@@ -43,6 +54,8 @@ while($line=<IN>){
 close(IN);
 
 print "\n";
+
+
 #print "The graph is $graph\n";
 print "::perl is determining the connected components of the graph\n";
 @cc=$graph->connected_components();
