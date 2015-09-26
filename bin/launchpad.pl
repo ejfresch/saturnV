@@ -17,8 +17,9 @@ my $date;
 my $cmd;
 my $identity;
 my $identity_usearch=0.6;
+my $bootstrap=100;
 
-GetOptions ("d=s" => \$dir_genomes,"c=s"   => \$n_cpu, "f=s"   => \$fast, "p=s"   => \$prokka, "r=s"   => \$raxml, "i=s"   => \$identity_usearch) or die("::usage: $0 -d <dir_genomes> -c <n_cpu> -f <[0|1]>\n[ERROR] launch failed! Please check the parameters!\n");
+GetOptions ("d=s" => \$dir_genomes,"c=s"   => \$n_cpu, "f=s"   => \$fast, "p=s"   => \$prokka, "r=s"   => \$raxml, "i=s"   => \$identity_usearch, "B=s"   => \$bootstrap) or die("::usage: $0 -d <dir_genomes> -c <n_cpu> -f <[0|1]>\n[ERROR] launch failed! Please check the parameters!\n");
 
 if($dir_genomes eq ""){
     print "::usage: $0 -d <dir_genomes> -c <n_cpu> -f <[0|1]>\n[ERROR] launch failed! Please check the parameters!\n";
@@ -117,7 +118,7 @@ print "::3..2..1..and...lift off -- $date";
 	# if the user want a phylogeny generated from the binary matrix
     if($raxml eq "1"){
         system("generate_binary_matrix.pl table_linked3.tsv");
-        $cmd="RAxML_driver.sh $n_cpu";
+        $cmd="RAxML_driver.sh $n_cpu $bootstrap";
         system($cmd);
     }
 
