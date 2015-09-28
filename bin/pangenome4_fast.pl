@@ -38,7 +38,7 @@ $first_genome=$genomes[0];
 
 $new_blasts=0;
 
-for $genome (@genomes[1..$#genomes]){
+for $genome (@genomes[0..$#genomes]){
     
   if(!(-e "${genome}_blasted.txt")){  
     
