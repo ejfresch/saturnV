@@ -1,4 +1,4 @@
-#!/usr/bin/perl -I /home/lfreschi/tasks/pangenome/script_new/bin
+#!/usr/bin/perl -I /home/avincent/Desktop/saturnV/bin
 
 
 use LibFASTA;
@@ -154,12 +154,12 @@ if($new_blasts > 0){
         } 
 
 
-        $identity=$data[2];
+
         $length_alignment=$data[3];
         
        # print $query."-".$hit."-"."$identity"."-".$length_alignment."-".($length_query*0.85)."-".($length_hit*0.85)."\n";
 
-        if(($identity >= 60) and ($length_alignment >= ($length_query*0.85)) and ($length_alignment >= ($length_hit*0.85)) ){
+        if(($length_alignment >= ($length_query*0.85)) and ($length_alignment >= ($length_hit*0.85)) ){
             
             $results{$query}{$genome_id}{$hit}=1; 
             $exclusion_zone{$hit}=1;   
@@ -333,11 +333,11 @@ if($new_blasts_iter2 > 0){
         } 
 
 
-        $identity=$data[2];
+
         $length_alignment=$data[3];
 
 
-        if(($identity >= 60) and ($length_alignment >= ($length_query*0.85)) and ($length_alignment >= ($length_hit*0.85)) ){
+        if(($length_alignment >= ($length_query*0.85)) and ($length_alignment >= ($length_hit*0.85)) ){
         
             $results{$query}{$genome_id}{$hit}=1; 
             $exclusion_zone{$hit}=1;   
