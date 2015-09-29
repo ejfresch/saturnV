@@ -10,7 +10,7 @@ while($line=<IN>){
     chomp($line);
     @data=split(/\t/,$line);
     $source=$data[0];
-    $dest=$data[1].".fasta";    
+    $dest=$data[1];    
     `cp ${source} out/${dest}`;    
 
 }
