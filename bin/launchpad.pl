@@ -130,7 +130,7 @@ mkdir 'prot_files';
 
 system("mv RAxML* Phylogeny");
 system("mv *.faa prot_files");
-system("mv *.gbk prot_files");
+system("mv *.gff prot_files");
 system("mv table_linked3.tsv matrix");
 system("mv binary_matrix.tsv matrix");
 system("mv binary_matrix.fasta matrix");
