@@ -40,7 +40,7 @@ foreach $genome (@genomes){
     print "::launching prodigal for genome $genome\n";
     
     
-    `prodigal -i $genome -a $root.faa -f gff -o $root.gff`;
+    `prodigal -i $genome -a $root.faa -f gff -o $root.gff >> log_file 2>&1`;
     
 
   $manager->finish;

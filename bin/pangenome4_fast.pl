@@ -24,7 +24,7 @@ for $genome (@genomes){
     
     if(!(-e "${genome}.udb")){
     print "::indexing sequences -- ${genome}\n";
-    `usearch8 -makeudb_usearch $genome -output ${genome}.udb`;
+    `usearch8 -makeudb_usearch $genome -output ${genome}.udb >> log_file 2>&1`;
     }
 }
 
@@ -46,7 +46,7 @@ for $genome (@genomes[0..$#genomes]){
   
   $manager->start and next;
     print "::performing usearch searches -- ${first_genome} vs ${genome}\n";
-    `usearch8 -usearch_local $first_genome -db ${genome}.udb -id $identity_usearch -blast6out ${genome}_blasted.txt`;
+    `usearch8 -usearch_local $first_genome -db ${genome}.udb -id $identity_usearch -blast6out ${genome}_blasted.txt >> log_file 2>&1`;
 
   $manager->finish;
 
@@ -260,7 +260,7 @@ undef %results;
 #I build the db
 
 if(!(-e "new_sequences_iter1.faa.udb")){
-    `usearch8 -makeudb_usearch new_sequences_iter1.faa -output new_sequences_iter1.faa.udb`;
+    `usearch8 -makeudb_usearch new_sequences_iter1.faa -output new_sequences_iter1.faa.udb >> log_file 2>&1`;
 
 
 }
@@ -276,7 +276,7 @@ for $genome (@genomes){
   $manager->start and next;
     print "::performing usearch searches -- new_sequences_iter1 vs ${genome}\n";
 
-    `usearch8 -usearch_local new_sequences_iter1.faa -db ${genome}.udb -id $identity_usearch -blast6out ${genome}_blasted_iter2.txt`;
+    `usearch8 -usearch_local new_sequences_iter1.faa -db ${genome}.udb -id $identity_usearch -blast6out ${genome}_blasted_iter2.txt >> log_file 2>&1`;
 
   $manager->finish;
     

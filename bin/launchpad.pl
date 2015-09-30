@@ -121,22 +121,27 @@ print "::3..2..1..and...lift off -- $date";
         system("generate_binary_matrix.pl table_linked3.tsv");
         $cmd="RAxML_driver.sh $n_cpu $bootstrap_num $bootstrap";
         system($cmd);
+
+	mkdir 'Phylogeny';
+	system("mv RAxML* Phylogeny");
+	system("mv binary_matrix.tsv matrix");
+	system("mv binary_matrix.fasta matrix");
     }
 
 
-mkdir 'Phylogeny';
+
+
 mkdir 'matrix';
 mkdir 'prot_files';
 
-system("mv RAxML* Phylogeny");
+
 system("mv *.faa prot_files");
 system("mv *.gff prot_files");
 system("mv table_linked3.tsv matrix");
-system("mv binary_matrix.tsv matrix");
-system("mv binary_matrix.fasta matrix");
+
 system("rm *.udb");
 system("rm *.fasta");
-system("rm *.tsv");
+
 
 
 
