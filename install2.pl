@@ -4,6 +4,8 @@
 use Getopt::Long;
 
 $install_dir="";
+$prokka_new_inst=0;
+
 
 GetOptions ("d=s" => \$install_dir) or die("::usage: $0 -d <install_dir>\n--example: $0 -d /home/luca/saturnv\n\nPlease remember to use an absolute path!\n");
 
@@ -24,12 +26,42 @@ print "::I check if the dependences are installed\n";
 $ret=system("which Rscript > /dev/null");
 if($ret ne 0){
 	print "--please install R\n";
-    	print "hint: \"sudo apt-get install r-base\" or ask your system administrator\n";	
+    	print "hint: \"sudo apt-get install r-base\" or ask your system administrator\n";
+	print "Then rerun install2.pl with the same options you provided above ($0 -d ${install_dir})\n";			
 	exit();
 }
 else{
 	print "--R is installed\n";
 }
+
+
+#perl -- graph
+$ret_graph=system("perl -e 'use Graph;' 2>install_err.log > /dev/null");
+if($ret_graph ne 0){
+	print "--please install the Graph Perl module\n";
+    	print "hint: \"sudo apt-get install libgraph-perl\" or ask your system administrator\n\n";
+	print "Then rerun install2.pl with the same options you provided above ($0 -d ${install_dir})\n";		
+	exit();
+}
+else{
+	print "--the Graph Perl module is installed\n";
+}
+
+
+#perl -- fork manager
+$ret_fm=system("perl -e 'use Parallel::ForkManager;' 2>install_err.log > /dev/null");
+if($ret_fm ne 0){
+	print "--please install the ForkManager Perl module\n";
+    	print "hint: \"sudo apt-get install libparallel-forkmanager-perl\" or ask your system administrator\n\n";	
+	print "Then rerun install2.pl with the same options you provided above ($0 -d ${install_dir})\n";		
+	exit();
+}
+else{
+	print "--the ForkManager Perl module is installed\n";
+}
+
+
+
 
 
 
@@ -48,7 +80,7 @@ if(($ret ne 0) and (!(-e "${install_dir}/usearch/usearch8"))){
 	print "--please install usearch\n";
 	mkdir("${install_dir}/usearch");
 
-    	print "hint: open your browser, go to http://www.drive5.com/usearch/download.html and follow the instructions.\n*You should get a file named usearch8.1.1756_i86linux32 (the version may vary)\n*Copy it inside the directory $install_dir/usearch/\n*Rename the file usearch8 (\"mv <yourfile> usearch8\")\n*Rerun install2.pl\n";	
+    	print "hint: open your browser, go to http://www.drive5.com/usearch/download.html and follow the instructions.\n*You should get a file named usearch8.1.1756_i86linux32 (NOTE: the version of usearch -- 8.1.1756 in this case -- may vary)\n*Copy it inside the directory $install_dir/usearch/\n*Rename the file usearch8 (\"mv ${install_dir}/usearch/usearch8.1.1756_i86linux32  usearch8\")\n*Be sure that the permissions are correctly set (\"chmod 775 ${install_dir}/usearch/usearch8\")\n*Rerun install2.pl with the same options you provided above ($0 -d ${install_dir})\n";	
 
 
 	exit();
@@ -80,8 +112,38 @@ print "::I check if the remaining dependences are installed\n";
 $ret=system("which prokka > /dev/null");
 if($ret ne 0){
 
-	print "--I download and install prokka\n";
+	#perl -- XML::Simple
+	$ret_xml=system("perl -e 'use XML::Simple;' 2>install_err.log > /dev/null");
+	if($ret_xml ne 0){
+		print "--please install the XML::Simple Perl module\n";
+    		print "hint: \"sudo apt-get install libxml-simple-perl\" or ask your system administrator\n\n";
+		print "Then rerun install2.pl with the same options you provided above ($0 -d ${install_dir})\n";		
+		exit();
+	}
+	else{
+		print "--the XML::Simple Perl module is installed\n";
+	}
 
+
+	#perl -- Bio
+	$ret_bp=system("perl -e 'use Bio::Root::Version;' 2>install_err.log > /dev/null");
+	if($ret_bp ne 0){
+		print "--please install the BioPerl Perl module\n";
+    		print "hint: \"sudo apt-get install bioperl\" or ask your system administrator\n";
+    		print "NOTE: bioperl consist of a lot of packages. They are not all needed by SaturnV (we only need the modules required to run Prokka). However, we advice you to install all packages since they may be useful for you in the future.\n\n";
+
+		print "Then rerun install2.pl with the same options you provided above ($0 -d ${install_dir})\n";		
+		exit();
+	}
+	else{
+		print "--the BioPerl Perl module is installed\n";
+	}
+
+
+
+
+	print "--I download and install prokka\n";
+	$prokka_new_inst=1;
 	mkdir("prokka");
 	chdir("prokka");
 	`wget http://www.vicbioinformatics.com/prokka-1.11.tar.gz`;
@@ -114,7 +176,7 @@ if($ret ne 0){
 
 }
 else{
-	print "--prokka is installed\n";
+	print "--blastp is installed\n";
 }
 
 
@@ -126,6 +188,8 @@ if($ret ne 0){
 	if($ret_make ne 0){
 		print "--please install make. I need it to compile mummer\n";
     		print "hint: \"sudo apt-get install make\" or ask your system administrator\n";	
+		print "Then rerun install2.pl with the same options you provided above ($0 -d ${install_dir})\n";		
+
 		exit();
 	}
 	else{
@@ -136,6 +200,8 @@ if($ret ne 0){
 	if($ret_csh ne 0){
 		print "--please install csh. I need it to compile mummer\n";
     		print "hint: \"sudo apt-get install csh\" or ask your system administrator\n";	
+		print "Then rerun install2.pl with the same options you provided above ($0 -d ${install_dir})\n";		
+
 		exit();
 	}
 	else{
@@ -148,6 +214,8 @@ if($ret ne 0){
 	if($ret_gcc ne 0){
 		print "--please install g++. I need it to compile mummer\n";
     		print "hint: \"sudo apt-get install g++\" or ask your system administrator\n";	
+		print "Then rerun install2.pl with the same options you provided above ($0 -d ${install_dir})\n";		
+
 		exit();
 	}
 	else{
@@ -171,7 +239,7 @@ if($ret ne 0){
 
 }
 else{
-	print "--prokka is installed\n";
+	print "--nummer is installed\n";
 }
 
 
@@ -186,17 +254,26 @@ chdir("bin/");
 print "::I set up the path for the SaturnV binaries\n";
 
 #setting up the paths for saturnV on .bashrc
-$cmd="printf \"#SaturnV -- paths to binaries\n\" >> ~/.bashrc";
+$cmd="printf \"\n#SaturnV -- paths to binaries\n\" >> ~/.bashrc";
 system($cmd);
 
 
-$cmd="printf \"export PATH=\$PATH:${install_dir}/bin:${install_dir}/blast/ncbi-blast-2.2.31+/bin:${install_dir}/prokka/prokka-1.11/binaries/linux::${install_dir}/mummer/MUMmer3.23/:${install_dir}/usearch\n\" >> ~/.bashrc";
+$cmd="printf \"export PATH=\$PATH:${install_dir}/bin:${install_dir}/blast/ncbi-blast-2.2.31+/bin:${install_dir}/prokka/prokka-1.11/binaries/linux:${install_dir}/prokka/prokka-1.11/bin:${install_dir}/mummer/MUMmer3.23/:${install_dir}/usearch\n\n\" >> ~/.bashrc";
 system($cmd);
 
 
+print "::No installation errors reported. I remove install_err.log from ${install_dir}\n";
+$cmd="rm -rf ${install_dir}/install_err.log";
+system($cmd);
 
 
-print "::Everything is ok and SaturnV is ready on the launchpad\n";
+print "::Everything is ok and SaturnV almost ready on the launchpad\n";
+print "*Please reload the .bashrc settings (\". ~/.bashrc\")\n";
+
+if($prokka_new_inst eq "1"){
+	print "*Then set up the prokka database (prokka --setupdb)\n";
+}
+
 
 
 
