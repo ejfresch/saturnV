@@ -23,7 +23,8 @@ foreach $genome (@genomes){
     $root=$genome;
     $root=~s/.fasta//;
     $root=~s/_/-/g;
-    if(-e "${root}/${root}.gff"){
+	mkdir "$root";
+    if(-e "${root}/${root}.faa"){
     	print "--I already have the .gff for genome $genome\n";	
     	next;
 
@@ -40,7 +41,7 @@ foreach $genome (@genomes){
     print "::launching prodigal for genome $genome\n";
     
     
-    `prodigal -i $genome -a $root.faa -f gff -o $root.gff >> log_file 2>&1`;
+    `prodigal -i $genome -a ${root}/${root}.faa -f gff -o ${root}/${root}.gff >> log_file 2>&1`;
     
 
   $manager->finish;
