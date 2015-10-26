@@ -1,3 +1,5 @@
+#!/usr/bin/Rscript
+
 matrix <- read.delim("binary_formated.tsv")
 
 matrix_new = t(matrix)
