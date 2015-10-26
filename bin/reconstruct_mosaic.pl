@@ -7,22 +7,17 @@ $res_mum="";
 $ref_file="";
 $dir_out="";
 
-GetOptions ("mum=s" => \$res_mum,"ref=s" => \$ref_file, "out=s" => \$dir_out) or die("::usage: $0 -mum <results_mummer> -ref <ref_strain> -out <out_dir>\n");
+GetOptions ("mum=s" => \$res_mum,"r=s" => \$ref_file, "out=s" => \$dir_out) or die("::usage: $0 -mum <results_mummer> -r <ref_strain> -out <out_dir>\n");
 
 
 if(($res_mum eq "") or ($ref_file eq "")){
-    print "::usage: $0 -mum <results_mummer> -ref <ref_strain> -out <out_dir>\n";
+    print "::usage: $0 -mum <results_mummer> -r <ref_strain> -out <out_dir>\n";
     exit();
 }
 
 
 #I check if there reference is there and I build an hash with all data
 
-
-if((-e "${dir_genomes}/$ref_file")){
-    $ref_file="${dir_genomes}/$ref_file";
-   
-}
 
 if(!(-e $ref_file)){
 
@@ -216,6 +211,9 @@ foreach $genome (@genomes){
     }
 
 }
+
+
+
 
 
 

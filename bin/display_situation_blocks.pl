@@ -176,32 +176,39 @@ foreach $frag (keys(%fragments)){
     open(OUT,">${file_out}/${frag}.svg");
     
     #shape of the canvas        
-    print OUT "<svg width=\"".($fragments{$frag}{"len"})."\" height=\"100\">\n";
+    print OUT "<svg width=\"10000\" height=\"100\">\n";
     
     #I draw the trail
-    print OUT '<line x1="1" y1="10" x2="'.($fragments{$frag}{"len"}).'" y2="10" style="stroke:rgb(0,0,0);stroke-width:2" />'."\n";   
+    #print OUT '<line x1="1" y1="14" x2="10000" y2="14" stroke="black" stroke-width="5"/>'."\n";   
     
 
     $ref=$fragments{$frag}{"fs"};
+    $svg_length_frag=$fragments{$frag}{"len"};
     %hash_frag=%$ref;
 
     foreach $key (keys(%hash_frag)){
-    
-        $len_frag=($hash_frag{$key}{"end"}-$hash_frag{$key}{"start"});
 
-        print OUT '<rect id="'.$key.'" x="'.$hash_frag{$key}{"start"}.'" y="6" rx="1" ry="1" width="'.$len_frag.'" height="7" style="fill:green;stroke:black;stroke-width:2;" />'."\n";
+        $svg_start=$hash_frag{$key}{"start"}*10000/$svg_length_frag;
+        $svg_end=$hash_frag{$key}{"end"}*10000/$svg_length_frag;
+        $svg_len=$svg_end-$svg_start;    
+
+
+
+        print OUT '<rect strain="'.$ref_strain.'" id="'.$key.'" prod="'.$hash_frag{$key}{"prod"}.'" x="'.$svg_start.'" y="10" rx="1" ry="1" width="'.$svg_len.'" height="7" fill="green" stroke="black" stroke-width="0.1"/>'."\n";
 
         $y_coord=10;
 
         foreach $genome (@genomes){
+
                         
             if($genome eq $ref_strain){next;}
-            $y_coord+=20;
+            $y_coord+=10;
 
             if(exists($db_el_ref{$key}{$genome})){
-                 print OUT '<rect x="'.$hash_frag{$key}{"start"}.'" y="'.$y_coord.'" rx="1" ry="1" width="'.$len_frag.'" height="7" style="fill:green;stroke:black;stroke-width:2;" />'."\n";
+
+                 print OUT '<rect strain="'.$genome.'" id="'.${genome}."-".${key}.'" prod="'.$hash_frag{$key}{"prod"}.'" x="'.$svg_start.'" y="'.$y_coord.'" rx="1" ry="1" width="'.$svg_len.'" height="7" fill="green" stroke="black" stroke-width="0.1"/>'."\n";
             }else{
-                print OUT '<rect x="'.$hash_frag{$key}{"start"}.'" y="'.$y_coord.'" rx="1" ry="1" width="'.$len_frag.'" height="7" style="fill:red;stroke:black;stroke-width:2;" />'."\n";
+                print OUT '<rect strain="'.$genome.'" id="'.${genome}."-".${key}.'" prod="'.$hash_frag{$key}{"prod"}.'" x="'.$svg_start.'" y="'.$y_coord.'" rx="1" ry="1" width="'.$svg_len.'" height="7" fill="red" stroke="black" stroke-width="0.1"/>'."\n";
             }
 
 
