@@ -41,7 +41,7 @@ print "::3..2..1..and...lift off -- $date";
 
     if($prokka eq "0"){
 
-   	 $cmd="prodigal_driver.pl -d ${dir_genomes} -c $n_cpu";
+   	 $cmd="satv_prodigal-driver.pl -d ${dir_genomes} -c $n_cpu";
    	 system($cmd);
     }
 
@@ -50,7 +50,7 @@ print "::3..2..1..and...lift off -- $date";
 
     if($prokka eq "1"){
 
-   	 $cmd="prokka_driver.pl -d ${dir_genomes} -c $n_cpu";
+   	 $cmd="satv_prokka-driver.pl -d ${dir_genomes} -c $n_cpu";
    	 system($cmd);
     }
 
@@ -79,13 +79,13 @@ print "::3..2..1..and...lift off -- $date";
     #determining the pangenome --second stage
     if($fast eq "0"){
 
-        $cmd="pangenome4.pl -g genomes_to_analyze.txt -c $n_cpu";
+        $cmd="satv_pangenome4.pl -g genomes_to_analyze.txt -c $n_cpu";
         system($cmd);
     }
 
      if($fast eq "1"){
 
-        $cmd="pangenome4_fast.pl -g genomes_to_analyze.txt -c $n_cpu -i $identity_usearch";
+        $cmd="satv_pangenome4-fast.pl -g genomes_to_analyze.txt -c $n_cpu -i $identity_usearch";
         system($cmd);
     }
 
@@ -110,7 +110,7 @@ print "::3..2..1..and...lift off -- $date";
     print "::Third stage\n";
     
     #determining the pangenome --second stage
-    $cmd="merge_data3.pl -i situation_all.txt";
+    $cmd="satv_merge-data3.pl -i situation_all.txt";
     system($cmd);
 
 
@@ -119,7 +119,7 @@ print "::3..2..1..and...lift off -- $date";
 	# if the user want a phylogeny generated from the binary matrix
     if($raxml eq "1"){
         system("generate_binary_matrix.pl table_linked3.tsv");
-        $cmd="RAxML_driver.sh $n_cpu $bootstrap_num";
+        $cmd="satv_raxml-driver.sh $n_cpu $bootstrap_num";
         system($cmd);
 
 	mkdir 'Phylogeny';

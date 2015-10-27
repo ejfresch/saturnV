@@ -11,7 +11,7 @@ dir_genomes=args[1]
 #cat("--",dir_genomes,"--","\n",sep="")
 
 if(is.na(dir_genomes)){
-    stop("::check_distrib_scaffolds.R <dir_genomes>\n")
+    stop("::satv_check-distrib-scaffolds.R <dir_genomes>\n")
   
 }
 

@@ -3,7 +3,7 @@
 
 awk 'BEGIN{FS=OFS="\t"}{$1="";sub("\t","")}1' binary_matrix.tsv > binary_formated.tsv
 
-transpose.r
+satv_transpose.R
 sed -i -e "1d" matrix_transposed.tsv
 
 sed 's/ //g;s/^./>/;s/"/\n/g' matrix_transposed.tsv > binary_matrix.fasta

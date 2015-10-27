@@ -36,7 +36,7 @@ foreach $genome (@genomes){
     
     
     print "::trimming the name of scaffolds -- $genome\n";
-    `trim_name_scaffolds.pl ${dir_genomes}/$genome ${genome} $root`;
+    `satv_trim-name-scaffolds.pl ${dir_genomes}/$genome ${genome} $root`;
     
     print "::launching prodigal for genome $genome\n";    
     `prodigal -i $genome -a ${root}/${root}.faa -f gff -o ${root}/${root}.gff >> log_file 2>&1`;

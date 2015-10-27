@@ -86,7 +86,7 @@ close(IN);
 #I generate the file file with all the features for the other strains
 
 
-$cmd="~/tasks/pangenome/saturnv/bin/extract_subset_matrix.pl -tab $file_in -out slide_matrix.tsv -include $include";
+$cmd="satv_extract-subset-matrix.pl -tab $file_in -out slide_matrix.tsv -include $include";
 system($cmd);
 
 

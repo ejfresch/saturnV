@@ -47,11 +47,11 @@ $root_ref=~s/_/-/g;
 
 if(-e "${dir_genomes}/$ref"){
     print "::trimming the name of scaffolds -- $ref\n";
-    `trim_name_scaffolds.pl ${dir_genomes}/$ref ${out_dir}/$ref $root_ref`;
+    `satv_trim-name-scaffolds.pl ${dir_genomes}/$ref ${out_dir}/$ref $root_ref`;
     
 }else{
     print "::trimming the name of scaffolds -- $ref\n";
-    `trim_name_scaffolds.pl ${ref_abs} ${out_dir}/$ref $root_ref`;
+    `satv_trim-name-scaffolds.pl ${ref_abs} ${out_dir}/$ref $root_ref`;
 
 
 }
@@ -81,7 +81,7 @@ foreach $genome (@genomes){
     
     
     print "::trimming the name of scaffolds -- $genome\n";
-    `trim_name_scaffolds.pl ${dir_genomes}/$genome ${out_dir}/${genome} $root`;
+    `satv_trim-name-scaffolds.pl ${dir_genomes}/$genome ${out_dir}/${genome} $root`;
     
     print "::launching mummer -- $ref vs $genome\n";
     

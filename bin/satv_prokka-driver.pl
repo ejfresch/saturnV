@@ -50,7 +50,7 @@ foreach $genome (@genomes){
     
     
     print "::trimming the name of scaffolds -- $genome\n";
-    `trim_name_scaffolds.pl ${dir_genomes}/$genome ${genome} $root`;
+    `satv_trim-name-scaffolds.pl ${dir_genomes}/$genome ${genome} $root`;
     
     print "::launching prokka for genome $genome\n";
     

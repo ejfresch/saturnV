@@ -121,7 +121,7 @@ foreach $genome (@genomes_mums){
 
 print "::reading the $file_in matrix and extracting data\n";
 
-$cmd="~/tasks/pangenome/saturnv/bin/extract_subset_matrix.pl -tab $file_in -out slide_matrix.tsv -include $include";
+$cmd="satv_extract-subset-matrix.pl -tab $file_in -out slide_matrix.tsv -include $include";
 system($cmd);
 
 
