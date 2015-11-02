@@ -1,105 +1,52 @@
-				</select>
-
+		</select>
             </div>
-
             <div class="col-sm-8 col-xs-1">&nbsp;</div>
-
         </div>
-
         <br /><br />
-
 		<div class="row">
-
 			<div class="col-xs-12">
-
-				<label for="container_svg">Viewer :</label>
-
 				<div class="pull-right">
-
 					<span class="label label-default">Zoom</span>
-
 					<div class="btn-group" role="group">
-
 						<button type="button" class="btn btn-default" id="zoom-in"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
-
 						<button type="button" class="btn btn-default" id="zoom-out"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
-
 					</div>
-
 					<br><br>
-
 				</div>
-
 				<input type="hidden" id="zoom_scale_value" value="1"></select>
-
 				<input type="hidden" id="zoom_width_value" value="1"></select>
-
 				<input type="hidden" id="zoom_height_value" value="1"></select>
-
 			</div>
-
 		</div>
-
     	<div class="row">
-
         	<div class="col-xs-12">
-
 				<div class="scroll-pane ui-widget ui-corner-all" style="overflow-y:auto;overflow-x:hidden;" >
-
+					<div id="selection" class="selectiondiv"></div>
 					<div class="scroll-content">				
-
 						<div id="container_svg"></div>
-
 					</div>
-
 				</div>
-
 				<div class="scroll-bar-wrap">
-
-					<div class="scroll-bar bg"></div>
-
+					<div class="scroll-bar"></div>
 				</div>
-
 			</div>
-
         </div>    
-
 		<br /><br />
-
 		<div class="row">
-
 			<div class="col-xs-12">
-
-				<label for="position_x">X scroll : </label>
-
-				<input type="text" class="form-control form-control-2" value="" id="position_x" readonly />
-
+				<input id="position_x" type="hidden" value="" />
 			</div>
-
 		</div>
-
 		<br><br><br><br>
-
     </div>
 
-
-
 	<div class="modal"></div>
-
 	
-
     <footer class="footer">
-
       <div class="container">
-
-        <p class="text-muted">Copyright &copy; 2015 Institut de Biologie Int&eacute;grative et des Syst&egrave;mes.</p>
-
+        <p class="text-muted">Copyright &copy; 2015 L. Freschi, A. Vincent, Marie-Josée Dupont, J. Jeukens, I. Kukavica-Ibrulj, S. Charette, R. C. Levesque</p>
       </div>
-
     </footer>
-
   
-
 </body>
-
 </html>

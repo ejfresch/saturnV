@@ -2,7 +2,7 @@
 
 use Getopt::Long;
 
-
+$dir_web_data="/home/lfreschi/tasks/pangenome/saturnv/web";
 $file_in="";
 $ref_strain="";
 
@@ -227,30 +227,39 @@ foreach $frag (keys(%fragments)){
     
 
     close(OUT);
-=head
-    #I generate the html file
-    open(OUT,">${file_out}/index.html");
 
-    print OUT "<!DOCTYPE html>\n<html>\n";
+#I copy the things that are needed to run the html stuff
 
-    print OUT <<END;
-<script src="http://code.jquery.com/jquery-1.9.1.js"></script> 
-<script> 
-$(function() {
-$("#includedContent").load(""); 
-}); 
-</script>
-END
+print "::I copy the web data\n";
 
-    print OUT "<body>\n"; 
-    
-       
-    print OUT "<body>\n</html>\n";
-    
+$cmd="cp -r ${dir_web_data}/css ${file_out}";
+system($cmd);
 
-    close(OUT);
+$cmd="cp -r ${dir_web_data}/fonts ${file_out}";
+system($cmd);
 
-=cut
+$cmd="cp -r ${dir_web_data}/js ${file_out}";
+system($cmd);
+
+$cmd="cp -r ${dir_web_data}/img ${file_out}";
+system($cmd);
+
+
+print "::I generate the html page\n";
+
+$cmd="cat ${dir_web_data}/segment1.txt > ${file_out}/index.html";
+system($cmd);
+
+
+open(OUT,">>$file_out/index.html");
+foreach $frag (keys(%fragments)){
+
+print OUT '<option value="svg/'.$frag.'.svg">'.$frag.'.svg</option>'."\n";
+
+}
+
+$cmd="cat ${dir_web_data}/segment2.txt >> ${file_out}/index.html";
+system($cmd);
 
 
 
