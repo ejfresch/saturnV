@@ -121,8 +121,23 @@ print OUT join("\t",@explode[@position_genomes])."\n";
 
 while($l=<IN>){
     @explode=split(/\t/,$l);
-    print OUT join("\t",@explode[@position_genomes])."\n";
+    
+    @arr_ids=@explode[@position_genomes];
+    
+    $count_ids_ok=0;
+    
+    foreach $current_id (@arr_ids){
 
+        if($current_id ne "-"){
+            $count_ids_ok++;            
+        }
+
+    }
+    
+    if($count_ids_ok>0){
+    
+        print OUT join("\t",@explode[@position_genomes])."\n";
+    }
 
 }
 

@@ -1,7 +1,9 @@
-#!/usr/bin/perl -I /home/lfreschi/tasks/pangenome/saturnv/bin
+#!/usr/bin/perl -I /project/rclevesq/users/lfreschi/tasks/pangenome/saturnv/bin
 
 
-$dir_web_data="/home/lfreschi/tasks/pangenome/saturnv/web";
+
+$dir_web_data=/project/rclevesq/users/lfreschi/tasks/pangenome/saturnv/web
+
 
 use Getopt::Long;
 use LibFASTA;
@@ -364,7 +366,6 @@ print OUT '<option value="svg/'.$frag.'.svg">'.$frag.'.svg</option>'."\n";
 
 $cmd="cat ${dir_web_data}/segment2.txt >> ${file_out}/index.html";
 system($cmd);
-
 
 
 

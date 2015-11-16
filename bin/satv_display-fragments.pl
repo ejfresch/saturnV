@@ -1,10 +1,12 @@
-#!/usr/bin/perl -I /home/lfreschi/tasks/pangenome/saturnv/bin
+#!/usr/bin/perl -I /project/rclevesq/users/lfreschi/tasks/pangenome/saturnv/bin
+
 
 
 use Getopt::Long;
 use LibFASTA;
 
-$dir_web_data="/home/lfreschi/tasks/pangenome/saturnv/web";
+$dir_web_data=/project/rclevesq/users/lfreschi/tasks/pangenome/saturnv/web
+
 
 $file_in="";
 $ref_strain="";
@@ -239,7 +241,6 @@ system($cmd);
 
 
 }
-
 
 
 

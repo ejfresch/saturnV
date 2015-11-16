@@ -54,7 +54,12 @@ while($line=<IN>){
         
         }
 
-        if($gene eq ""){next;}
+        if($gene eq ""){
+
+            $gene=$details_exploded[0];$gene=~s/ID=//g;
+
+        }
+
 
         if(!(exists($fragments{$fragment_name}))){
             $fragments{$fragment_name}=$strand.$gene;

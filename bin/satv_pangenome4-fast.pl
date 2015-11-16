@@ -1,4 +1,5 @@
-#!/usr/bin/perl -I /home/avincent/Desktop/saturnV/bin
+#!/usr/bin/perl -I /project/rclevesq/users/lfreschi/tasks/pangenome/saturnv/bin
+
 
 
 use LibFASTA;
@@ -405,7 +406,6 @@ $date=`date "+%Y-%m-%d %H:%M:%S"`;
 
 print "::Analysis completed at $date";
 print "Bye!\n";
-
 
 
 

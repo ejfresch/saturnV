@@ -2,7 +2,8 @@
 
 use Getopt::Long;
 
-$dir_web_data="/home/lfreschi/tasks/pangenome/saturnv/web";
+$dir_web_data=/project/rclevesq/users/lfreschi/tasks/pangenome/saturnv/web
+
 $file_in="";
 $ref_strain="";
 
@@ -264,7 +265,6 @@ system($cmd);
 
 
 }
-
 
 
 
