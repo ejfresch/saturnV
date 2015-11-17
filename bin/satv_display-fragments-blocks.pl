@@ -2,7 +2,8 @@
 
 
 
-$dir_web_data=/project/rclevesq/users/lfreschi/tasks/pangenome/saturnv/web
+
+$dir_web_data="/project/rclevesq/users/lfreschi/tasks/pangenome/saturnv/web";
 
 
 use Getopt::Long;
@@ -245,7 +246,7 @@ foreach $frag (keys(%fragments)){
 
                  print OUT '<line title="id_ref:'.$key.'; prod:'.$hash_frag{$key}{"prod"}.'; coord_start:'.$hash_frag{$key}{"start"}.'; coord_end:'.$hash_frag{$key}{"end"}.'" x1="'.($hash_frag{$key}{"start"}*10000/$svg_length_frag).'" y1="'.$y_coord_gen.'" x2="'.($hash_frag{$key}{"end"}*10000/$svg_length_frag).'" y2="'.$y_coord_gen.'" stroke="green" stroke-width="3"/>'."\n";
             }else{
-                 print OUT '<line title="id_ref:'.$key.'; prod:'.$hash_frag{$key}{"prod"}.'; coord_start:'.$hash_frag{$key}{"start"}.'; coord_end:'.$hash_frag{$key}{"end"}.'" x1="'.($hash_frag{$key}{"start"}*10000/$svg_length_frag).'" y1="'.$y_coord_gen.'" x2="'.($hash_frag{$key}{"end"}*10000/$svg_length_frag).'" y2="'.$y_coord_gen.'" stroke="green" stroke-width="3"/>'."\n";
+                 print OUT '<line title="id_ref:'.$key.'; prod:'.$hash_frag{$key}{"prod"}.'; coord_start:'.$hash_frag{$key}{"start"}.'; coord_end:'.$hash_frag{$key}{"end"}.'" x1="'.($hash_frag{$key}{"start"}*10000/$svg_length_frag).'" y1="'.$y_coord_gen.'" x2="'.($hash_frag{$key}{"end"}*10000/$svg_length_frag).'" y2="'.$y_coord_gen.'" stroke="red" stroke-width="3"/>'."\n";
             }
 
 
@@ -366,6 +367,3 @@ print OUT '<option value="svg/'.$frag.'.svg">'.$frag.'.svg</option>'."\n";
 
 $cmd="cat ${dir_web_data}/segment2.txt >> ${file_out}/index.html";
 system($cmd);
-
-
-

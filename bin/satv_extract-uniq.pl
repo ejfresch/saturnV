@@ -116,6 +116,10 @@ close(OUT);
 
 @uniq_genes=keys(%uniq_genes);
 
+open(OUT,">abc");
+print OUT join("\n",@uniq_genes)."\n";
+close(OUT);
+
 
 if($ref_strain eq ""){
 

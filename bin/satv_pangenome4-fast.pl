@@ -2,6 +2,7 @@
 
 
 
+
 use LibFASTA;
 use Parallel::ForkManager;
 use Getopt::Long;
@@ -406,9 +407,5 @@ $date=`date "+%Y-%m-%d %H:%M:%S"`;
 
 print "::Analysis completed at $date";
 print "Bye!\n";
-
-
-
-
 
 

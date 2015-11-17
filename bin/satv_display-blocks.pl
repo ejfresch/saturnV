@@ -2,7 +2,7 @@
 
 use Getopt::Long;
 
-$dir_web_data=/project/rclevesq/users/lfreschi/tasks/pangenome/saturnv/web
+$dir_web_data="/project/rclevesq/users/lfreschi/tasks/pangenome/saturnv/web";
 
 $file_in="";
 $ref_strain="";
@@ -172,19 +172,23 @@ close(IN);
 #I get the fragments
 
 mkdir($file_out);
+mkdir("${file_out}/svg");
 
 foreach $frag (keys(%fragments)){
-    open(OUT,">${file_out}/${frag}.svg");
+    open(OUT,">${file_out}/svg/${frag}.svg");
     
     #shape of the canvas        
-    print OUT "<svg width=\"10000\" height=\"100\">\n";
-    
+    print OUT '<svg xmlns="http://www.w3.org/2000/svg" version="1.1"'." width=\"10000\" height=\"".(50+(20*($#genomes+1)))."\">\n";
+    print OUT '<g id="group">'."\n";    
+
+
     #I draw the trail
     #print OUT '<line x1="1" y1="14" x2="10000" y2="14" stroke="black" stroke-width="5"/>'."\n";   
     
-
+    #print "FRAG: $frag\n";
     $ref=$fragments{$frag}{"fs"};
     $svg_length_frag=$fragments{$frag}{"len"};
+    #print $svg_length_frag."\n";
     %hash_frag=%$ref;
 
     foreach $key (keys(%hash_frag)){
@@ -195,7 +199,10 @@ foreach $frag (keys(%fragments)){
 
 
 
-        print OUT '<rect strain="'.$ref_strain.'" id="'.$key.'" prod="'.$hash_frag{$key}{"prod"}.'" x="'.$svg_start.'" y="10" rx="1" ry="1" width="'.$svg_len.'" height="7" fill="green" stroke="black" stroke-width="0.1"/>'."\n";
+        #print OUT '<rect strain="'.$ref_strain.'" id="'.$key.'" prod="'.$hash_frag{$key}{"prod"}.'" x="'.$svg_start.'" y="10" width="'.$svg_len.'" height="7" fill="green" stroke="black" stroke-width="0.1"/>'."\n";
+
+print OUT '<rect id="'.$key.'" title="genome:'.$ref_strain.';id_ref:'.$key."; prod:".$hash_frag{$key}{"prod"}.'; coord_start:'.$hash_frag{$key}{"start"}.'; coord_end:'.$hash_frag{$key}{"end"}.'" x="'.$svg_start.'" y="10" width="'.$svg_len.'" height="7" fill="green" stroke="black" stroke-width="0.1"/>'."\n";
+
 
         $y_coord=10;
 
@@ -207,9 +214,14 @@ foreach $frag (keys(%fragments)){
 
             if(exists($db_el_ref{$key}{$genome})){
 
-                 print OUT '<rect strain="'.$genome.'" id="'.${genome}."-".${key}.'" prod="'.$hash_frag{$key}{"prod"}.'" x="'.$svg_start.'" y="'.$y_coord.'" rx="1" ry="1" width="'.$svg_len.'" height="7" fill="green" stroke="black" stroke-width="0.1"/>'."\n";
+                 #print OUT '<rect strain="'.$genome.'" id="'.${genome}."-".${key}.'" prod="'.$hash_frag{$key}{"prod"}.'" x="'.$svg_start.'" y="'.$y_coord.'" width="'.$svg_len.'" height="7" fill="green" stroke="black" stroke-width="0.1"/>'."\n";
+                print OUT '<rect title="genome:'.$genome.';id_ref:'.$key."; prod:".$hash_frag{$key}{"prod"}.'; coord_start:'.$hash_frag{$key}{"start"}.'; coord_end:'.$hash_frag{$key}{"end"}.'" x="'.$svg_start.'" y="'.$y_coord.'" width="'.$svg_len.'" height="7" fill="green" stroke="black" stroke-width="0.1"/>'."\n";
+
+
             }else{
-                print OUT '<rect strain="'.$genome.'" id="'.${genome}."-".${key}.'" prod="'.$hash_frag{$key}{"prod"}.'" x="'.$svg_start.'" y="'.$y_coord.'" rx="1" ry="1" width="'.$svg_len.'" height="7" fill="red" stroke="black" stroke-width="0.1"/>'."\n";
+                #print OUT '<rect strain="'.$genome.'" id="'.${genome}."-".${key}.'" prod="'.$hash_frag{$key}{"prod"}.'" x="'.$svg_start.'" y="'.$y_coord.'" width="'.$svg_len.'" height="7" fill="red" stroke="black" stroke-width="0.1"/>'."\n";
+                print OUT '<rect title="genome:'.$genome.';id_ref:'.$key."; prod:".$hash_frag{$key}{"prod"}.'; coord_start:'.$hash_frag{$key}{"start"}.'; coord_end:'.$hash_frag{$key}{"end"}.'" x="'.$svg_start.'" y="'.$y_coord.'" width="'.$svg_len.'" height="7" fill="red" stroke="black" stroke-width="0.1"/>'."\n"; 
+
             }
 
 
@@ -223,7 +235,7 @@ foreach $frag (keys(%fragments)){
 
 
 
-
+    print OUT '</g>'."\n";
     print OUT "</svg>\n";
     
 
@@ -265,10 +277,6 @@ system($cmd);
 
 
 }
-
-
-
-
 
 
 

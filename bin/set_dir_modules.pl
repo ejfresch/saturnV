@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 $current_dir=`pwd`;
+chomp($current_dir);
 $web_dir=$current_dir;
 $web_dir=~s/bin/web/;
 
@@ -23,7 +24,7 @@ foreach $file (@files_to_modify){
 
         if($line=~/^\$dir_web_data=/){
             
-            $data[$i]='$dir_web_data='.$web_dir;
+            $data[$i]='$dir_web_data="'.$web_dir.'";';
         }    
 
         

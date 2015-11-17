@@ -76,7 +76,7 @@ $header=~s/#//;
 
 %hash_genomes=();
 
-for($i=0;$i<$#data;$i++){
+for($i=0;$i<=$#data;$i++){
     
     $gen=$data[$i];    
     $hash_genomes{$gen}=$i;    
@@ -120,21 +120,24 @@ print OUT join("\t",@explode[@position_genomes])."\n";
 
 
 while($l=<IN>){
+    chomp($l);
     @explode=split(/\t/,$l);
     
     @arr_ids=@explode[@position_genomes];
     
+    
     $count_ids_ok=0;
     
     foreach $current_id (@arr_ids){
-
+       # print "-$current_id--";
         if($current_id ne "-"){
             $count_ids_ok++;            
         }
 
     }
-    
+    #print "\n";
     if($count_ids_ok>0){
+      #  print "$count_ids_ok:\n";
     
         print OUT join("\t",@explode[@position_genomes])."\n";
     }

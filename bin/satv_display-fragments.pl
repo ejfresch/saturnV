@@ -2,10 +2,11 @@
 
 
 
+
 use Getopt::Long;
 use LibFASTA;
 
-$dir_web_data=/project/rclevesq/users/lfreschi/tasks/pangenome/saturnv/web
+$dir_web_data="/project/rclevesq/users/lfreschi/tasks/pangenome/saturnv/web";
 
 
 $file_in="";
@@ -111,15 +112,19 @@ foreach $genome (@genomes){
 #I get the fragments
 
 mkdir($file_out);
+mkdir("${file_out}/svg");
 
 foreach $frag (keys(%fragments)){
 
 
     $y_coord=10;
-    open(OUT,">${file_out}/${frag}.svg");
+    open(OUT,">${file_out}/svg/${frag}.svg");
     
     #shape of the canvas        
-    print OUT "<svg width=\"10000\" height=\"".(50+(20*($#genomes+1)))."\">\n";
+   print OUT '<svg xmlns="http://www.w3.org/2000/svg" version="1.1"'." width=\"10000\" height=\"".(50+(20*($#genomes+1)))."\">\n";
+   print OUT '<g id="group">'."\n";
+
+
     $svg_length_frag=$fragments{$frag}{"len"};
     #I draw the trail
     print OUT '<rect strain="'.$ref_strain.'" x="1" y="10" rx="1" ry="1" width="10000" height="7" fill="purple" stroke="black" stroke-width="0.1"/>'."\n";
@@ -130,7 +135,7 @@ foreach $frag (keys(%fragments)){
     foreach $key (keys(%hash_frag)){
         
     
-        print OUT '<line id="'.$key.'" prod="'.$hash_frag{$key}{"prod"}.'" coord_start="'.$hash_frag{$key}{"start"}.'" coord_end="'.$hash_frag{$key}{"end"}.'" x1="'.($hash_frag{$key}{"start"}*10000/$svg_length_frag).'" y1="19" x2="'.($hash_frag{$key}{"end"}*10000/$svg_length_frag).'" y2="19" stroke="green" stroke-width="3"/>'."\n";   
+        print OUT '<line id="'.$key.'" title="genome:'.$ref_strain.'; prod:'.$hash_frag{$key}{"prod"}.'; coord_start:'.$hash_frag{$key}{"start"}.'; coord_end:'.$hash_frag{$key}{"end"}.'" x1="'.($hash_frag{$key}{"start"}*10000/$svg_length_frag).'" y1="19" x2="'.($hash_frag{$key}{"end"}*10000/$svg_length_frag).'" y2="19" stroke="green" stroke-width="3"/>'."\n";   
     }
      $y_coord=15;
 
@@ -175,7 +180,7 @@ foreach $frag (keys(%fragments)){
                         $svg_record_len=$svg_record_end-$svg_record_start;
 
 
-                        print OUT '<rect strain="'.$sname.'" coord_start="'.$record_start.'" coord_end="'.$record_end.'" x="'.$svg_record_start.'" y="'.$y_coord.'" rx="1" ry="1" width="'.($svg_record_len).'" height="7" fill="purple" stroke="black" stroke-width="0.1"/>'."\n";
+                        print OUT '<rect title="genome:'.$sname.'; coord_start:'.$record_start.'; coord_end:'.$record_end.'" x="'.$svg_record_start.'" y="'.$y_coord.'" rx="1" ry="1" width="'.($svg_record_len).'" height="7" fill="purple" stroke="black" stroke-width="0.1"/>'."\n";
 
                         
                     }
@@ -198,7 +203,7 @@ foreach $frag (keys(%fragments)){
 
 
 
-
+    print OUT '</g>'."\n";
     print OUT "</svg>\n";
     
 
@@ -241,10 +246,6 @@ system($cmd);
 
 
 }
-
-
-
-
 
 
 
