@@ -118,7 +118,7 @@ print "::3..2..1..and...lift off -- $date";
 
 	# if the user want a phylogeny generated from the binary matrix
     if($raxml eq "1"){
-        system("generate_binary_matrix.pl table_linked3.tsv");
+        system("satv_generate-binary-matrix.pl table_linked3.tsv");
         $cmd="satv_raxml-driver.sh $n_cpu $bootstrap_num";
         system($cmd);
 
