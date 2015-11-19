@@ -239,8 +239,36 @@ if($ret ne 0){
 
 }
 else{
-	print "--nummer is installed\n";
+	print "--mummer is installed\n";
 }
+
+
+
+
+$ret=system("which CONTIGuator.py 2>install_err.log > /dev/null");
+if($ret ne 0){
+
+	#I install blast
+	print "--I download and install Contiguator\n";
+	mkdir("contiguator");
+	chdir("contiguator");
+	`wget http://downloads.sourceforge.net/project/contiguator/CONTIGuator_v2.7.tar.gz`;
+	`tar -xvzf CONTIGuator_v2.7.tar.gz`;
+	`chmod 775 CONTIGuator_v2.7/CONTIGuator.py`;
+
+	chdir("../");
+
+
+}
+else{
+	print "--Contiguator is installed\n";
+
+
+
+
+
+
+
 
 
 
@@ -258,7 +286,7 @@ $cmd="printf \"\n#SaturnV -- paths to binaries\n\" >> ~/.bashrc";
 system($cmd);
 
 
-$cmd="printf \"export PATH=\$PATH:${install_dir}/bin:${install_dir}/blast/ncbi-blast-2.2.31+/bin:${install_dir}/prokka/prokka-1.11/binaries/linux:${install_dir}/prokka/prokka-1.11/bin:${install_dir}/mummer/MUMmer3.23/:${install_dir}/usearch\n\n\" >> ~/.bashrc";
+$cmd="printf \"export PATH=\$PATH:${install_dir}/bin:${install_dir}/blast/ncbi-blast-2.2.31+/bin:${install_dir}/prokka/prokka-1.11/binaries/linux:${install_dir}/prokka/prokka-1.11/bin:${install_dir}/mummer/MUMmer3.23/:${install_dir}/usearch:${install_dir}/contiguator/CONTIGuator_v2.7/\n\n\" >> ~/.bashrc";
 system($cmd);
 
 

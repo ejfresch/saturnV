@@ -146,4 +146,21 @@ else{
 
 
 
+$ret=system("which CONTIGuator.py 2>install_err.log > /dev/null");
+if($ret ne 0){
+
+	print "--Contiguator is not installed, but the installation script can take care of that!\n";
+
+
+}
+else{
+	print "--Contiguator (OK)\n";
+}
+
+
+
+
+
+
+
 print "::Bye!\n";
