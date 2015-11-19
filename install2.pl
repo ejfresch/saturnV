@@ -268,7 +268,7 @@ if($ret ne 0){
 else{
 	print "--Contiguator is installed\n";
 
-
+}
 
 
 
