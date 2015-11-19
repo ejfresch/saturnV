@@ -13,7 +13,15 @@ if($ret ne 0){
 }
 else{
 	print "--R (OK)\n";
+    system("./bin/test-r-packages.R");
+
+
 }
+
+
+
+
+
 
 
 #perl -- graph

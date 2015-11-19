@@ -32,7 +32,12 @@ if($ret ne 0){
 }
 else{
 	print "--R is installed\n";
+    system("./bin/install-r-packages.R");
 }
+
+
+
+
 
 
 #perl -- graph
