@@ -1,14 +1,30 @@
 #!/usr/bin/perl
 
+use Getopt::Long;
 
 
-open(IN,"<$ARGV[0]");
+
+$file_in="";
+$file_out="";
+
+GetOptions ("tab=s" => \$file_in, "out=s" => \$file_out) or die("::usage: $0 -tab <table_genes> -out <file_out>\n");
+
+
+
+if(($file_in eq "") or ($file_out eq "")){
+    print "::usage: $0 -tab <table_genes> -out <file_out>\n";
+    exit();
+}
+
+
+
+open(IN,"<${file_in}");
 @data=<IN>;
 chomp(@data);
 close(IN);
 
 
-open(OUT,">binary_matrix.tsv");
+open(OUT,">${file_out}");
 $first_line=shift(@data);
 $first_line=~s/^#//;
 print OUT "ID\t".$first_line."\n";
