@@ -167,7 +167,7 @@ else{
 
 
 
-
+print "\n::If you know how to install the missing softwares/packages softwares, go for it! Otherwise, do not worry! The installation script will guide you through the installation process.\n";
 
 
 

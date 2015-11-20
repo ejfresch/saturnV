@@ -115,7 +115,7 @@ chdir($install_dir);
 print "::I check if the remaining dependences are installed\n";
 
 $ret=system("which prokka > /dev/null");
-if($ret ne 0){
+if(($ret ne 0) and (!(-e "./prokka"))){
 
 	#perl -- XML::Simple
 	$ret_xml=system("perl -e 'use XML::Simple;' 2>install_err.log > /dev/null");
@@ -167,7 +167,7 @@ else{
 
 
 $ret=system("which blastp > /dev/null");
-if($ret ne 0){
+if(($ret ne 0) and (!(-e "./blast"))){
 
 	#I install blast
 	print "--I download and install blast\n";
@@ -187,7 +187,7 @@ else{
 
 
 $ret=system("which mummer > /dev/null");
-if($ret ne 0){
+if(($ret ne 0) and (!(-e "./mummer"))){
 
 	$ret_make=system("which make > /dev/null");
 	if($ret_make ne 0){
@@ -251,7 +251,7 @@ else{
 
 
 $ret=system("which CONTIGuator.py 2>install_err.log > /dev/null");
-if($ret ne 0){
+if(($ret ne 0) and (!(-e "./contiguator"))){
 
 	#I install blast
 	print "--I download and install Contiguator\n";
