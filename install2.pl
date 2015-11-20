@@ -111,6 +111,8 @@ system($cmd);
 print "::Changing directory -- $install_dir\n";
 chdir($install_dir);
 
+$install_dir=`pwd`;
+
 
 print "::I check if the remaining dependences are installed\n";
 
