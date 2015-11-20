@@ -5,6 +5,20 @@
 
 print "::I check if the dependences are installed\n";
 
+#java
+$ret=system("java -version > /dev/null");
+if($ret ne 0){
+	print "--please install java\n";
+    	
+}
+else{
+	print "--java (OK)\n";
+
+
+
+}
+
+
 #R
 $ret=system("which Rscript > /dev/null");
 if($ret ne 0){
@@ -164,6 +178,22 @@ if($ret ne 0){
 else{
 	print "--Contiguator (OK)\n";
 }
+
+
+
+
+#RAxML
+$ret=system("raxmlHPC-PTHREADS -version > /dev/null");
+if($ret ne 0){
+	print "--please install RAxML\n";
+    	
+}
+else{
+	print "--RAxML (OK)\n";
+
+}
+
+
 
 
 

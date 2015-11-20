@@ -22,6 +22,19 @@ if($install_dir eq ""){
 
 print "::I check if the dependences are installed\n";
 
+
+#java
+$ret_java=system("java -version 2>install_err.log > /dev/null");
+if($ret_java ne 0){
+	print "--please install java\n";
+    	print "hint: \"sudo apt-get install openjdk-7-jre\" or ask your system administrator\n\n";
+	print "Then rerun install2.pl with the same options you provided above ($0 -d ${install_dir})\n";		
+	exit();
+}
+else{
+	print "--java is installed\n";
+}
+
 #R
 $ret=system("which Rscript > /dev/null");
 if($ret ne 0){
@@ -100,6 +113,11 @@ print "::Copying the bin/ folder to $install_dir\n";
 $cmd="cp -r bin ${install_dir}";
 system($cmd);
 
+print "::Copying the web/ folder to $install_dir\n";
+$cmd="cp -r web ${install_dir}";
+system($cmd);
+
+
 print "::Copying the licence and README files\n";
 $cmd="cp -r COPYING ${install_dir}";
 system($cmd);
@@ -112,6 +130,11 @@ print "::Changing directory -- $install_dir\n";
 chdir($install_dir);
 
 $install_dir=`pwd`;
+chomp($install_dir);
+
+
+print $install_dir."\n";
+
 
 
 print "::I check if the remaining dependences are installed\n";
@@ -272,6 +295,28 @@ else{
 
 }
 
+#RaxML PTHREADS version
+$ret=system("raxmlHPC-PTHREADS -version 2>install_err.log > /dev/null");
+if(($ret ne 0) and (!(-e "./raxmlHPC-PTHREADS"))){
+
+	#I install RAxML
+	print "--I download and install RAxML\n";
+	mkdir("RAxML");
+	chdir("RAxML");
+	`wget https://github.com/stamatak/standard-RAxML/archive/master.zip`;
+	`unzip master.zip`;
+	chdir("standard-RAxML-master");
+	`make -f Makefile.PTHREADS.gcc`;
+
+	chdir("../../");
+
+
+}
+else{
+	print "--RAxML is installed\n";
+
+}
+
 
 
 
@@ -283,7 +328,7 @@ else{
 
 print "::I set up the path for LibFASTA\n";
 chdir("bin/");
-`set_dir_modules.pl`;
+`./set_dir_modules.pl`;
 
 
 print "::I set up the path for the SaturnV binaries\n";
@@ -293,12 +338,12 @@ $cmd="printf \"\n#SaturnV -- paths to binaries\n\" >> ~/.bashrc";
 system($cmd);
 
 
-$cmd="printf \"export PATH=\$PATH:${install_dir}/bin:${install_dir}/blast/ncbi-blast-2.2.31+/bin:${install_dir}/prokka/prokka-1.11/binaries/linux:${install_dir}/prokka/prokka-1.11/bin:${install_dir}/mummer/MUMmer3.23/:${install_dir}/usearch:${install_dir}/contiguator/CONTIGuator_v2.7/\n\n\" >> ~/.bashrc";
+$cmd="printf \"export PATH=\$PATH:${install_dir}/bin:${install_dir}/blast/ncbi-blast-2.2.31+/bin:${install_dir}/prokka/prokka-1.11/binaries/linux:${install_dir}/prokka/prokka-1.11/bin:${install_dir}/mummer/MUMmer3.23/:${install_dir}/usearch:${install_dir}/contiguator/CONTIGuator_v2.7/:${install_dir}/RAxML/standard-RAxML-master/\n\n\" >> ~/.bashrc";
 system($cmd);
 
 
 print "::No installation errors reported. I remove install_err.log from ${install_dir}\n";
-$cmd="rm -rf ${install_dir}/install_err.log";
+$cmd="rm ${install_dir}/install_err.log";
 system($cmd);
 
 
