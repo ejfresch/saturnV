@@ -1,10 +1,10 @@
 #!/usr/bin/perl
 
 use Getopt::Long;
-use strict;
 
 
-my $base_path = 'database/prot2003-2014.fa.udb';
+
+$base_path="/home/avincent/Desktop/saturnV/bin/database";
 my $sequences;
 my $line;
 my $line2;
@@ -21,11 +21,11 @@ my $CAT;
 my $PRODUCT;
 my $report;
 
-GetOptions ("s=s" => \$sequences);
+GetOptions ("s=s" => \$sequences) or die("::usage: $0 -s the file containing the translated sequences\n");
 
 open($report, '>', 'COG_report.tsv');
 
-if (-e $base_path)
+if (-e "$base_path/prot2003-2014.fa.udb")
 	{ 
 
 	print "## Database found \n";
@@ -33,15 +33,15 @@ if (-e $base_path)
 else
 	{
 	print "## Database not found, one will be created \n";
-	system ("usearch8 -makeudb_usearch database/prot2003-2014.fa -output database/prot2003-2014.fa.udb");
+	system ("usearch8 -makeudb_usearch $base_path/prot2003-2014.fa -output $base_path/prot2003-2014.fa.udb");
 	}
 
 	print "## Performing comparison ...\n";
-	system ("usearch8 -usearch_local $sequences -db database/prot2003-2014.fa.udb -id 0.5 -blast6out result_blasted.txt > /dev/null 2>&1");
+	system ("usearch8 -usearch_local $sequences -db $base_path/prot2003-2014.fa.udb -id 0.5 -blast6out result_blasted.txt > /dev/null 2>&1");
 	print "## Done\n";
 
 	print "## Will put in memory information regarding COG ... \n";
- open(IN,"database/cog2003-2014.csv")||die "I cannot open cog2003-2014.csv";
+ open(IN,"$base_path/cog2003-2014.csv")||die "I cannot open cog2003-2014.csv";
     while($line=<IN>){
         chomp($line);
 
@@ -53,7 +53,7 @@ else
 	}
 close(IN);
 
- open(IN2,"database/cognames2003-2014.tab")||die "I cannot open cognames2003-2014.tab";
+ open(IN2,"$base_path/cognames2003-2014.tab")||die "I cannot open cognames2003-2014.tab";
     while($line2=<IN2>){
         chomp($line2);
 
@@ -85,4 +85,3 @@ close(IN2);
 	}
 close(IN3);
 close($report);
-

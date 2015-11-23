@@ -317,7 +317,23 @@ else{
 
 }
 
+#COG database
 
+if (-e "$install_dir/bin/database/prot2003-2014.fa"){
+
+
+	print "--The COG database is installed\n";
+}
+else{
+	print "--I download the COG database\n";
+	mkdir "$install_dir/bin/database/";
+	chdir("$install_dir/bin/database/");
+	`wget 'ftp://ftp.ncbi.nih.gov/pub/COG/COG2014/data/prot2003-2014.fa.gz'`;
+	`wget 'ftp://ftp.ncbi.nih.gov/pub/COG/COG2014/data/cognames2003-2014.tab'`;
+	`wget 'ftp://ftp.ncbi.nih.gov/pub/COG/COG2014/data/cog2003-2014.csv'`;
+	`gunzip prot2003-2014.fa.gz`;
+	chdir("../../..");
+}
 
 
 
