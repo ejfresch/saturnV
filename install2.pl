@@ -303,7 +303,7 @@ if(($ret ne 0) and (!(-e "./raxmlHPC-PTHREADS"))){
 	print "--I download and install RAxML\n";
 	mkdir("RAxML");
 	chdir("RAxML");
-	`wget https://github.com/stamatak/standard-RAxML/archive/master.zip`;
+	`wget -O master.zip https://github.com/stamatak/standard-RAxML/archive/master.zip`;
 	`unzip master.zip`;
 	chdir("standard-RAxML-master");
 	`make -f Makefile.PTHREADS.gcc`;
