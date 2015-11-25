@@ -65,6 +65,39 @@ foreach $genome (@genomes){
 	close("$faa_clean");
 	system("mv ${root}/${root}_clean.faa ${root}/${root}.faa");
 
+
+
+
+
+
+open($fna_clean, '>', "${root}/${root}_clean.fna");
+	open(IN2,"${root}/${root}.fna")||die "I cannot open ${root}/${root}.fna";
+	$i=1;
+   	 while($line2=<IN2>){
+     	   chomp($line2);
+
+		if ($line2 =~ /^\>/)
+				{
+				print $fna_clean ">${root}_seq$i\n";
+				$i++;
+				}
+		else
+		{
+		print $fna_clean "$line2\n";
+		}
+
+	}
+	close(IN2);
+	close("$fna_clean");
+	system("mv ${root}/${root}_clean.fna ${root}/${root}.fna");
+
+
+
+
+
+
+
+
   $manager->finish;
 }
 
