@@ -19,11 +19,12 @@ my $identity;
 my $identity_usearch=0.6;
 my $bootstrap_num=100;
 my $bootstrap=1;
+my $knife="";
 
-GetOptions ("d=s" => \$dir_genomes,"c=s"   => \$n_cpu, "f=s"   => \$fast, "p=s"   => \$prokka, "r=s"   => \$raxml, "i=s"   => \$identity_usearch, "B=s"   => \$bootstrap_num) or die("::usage: $0 -d <dir_genomes> -c <n_cpu> -f <[0|1]>\n[ERROR] launch failed! Please check the parameters!\n");
+GetOptions ("d=s" => \$dir_genomes,"c=s"   => \$n_cpu, "f=s"   => \$fast,"k=s"   => \$knife, "p=s"   => \$prokka, "r=s"   => \$raxml, "i=s"   => \$identity_usearch, "B=s"   => \$bootstrap_num) or die("::usage: $0 -d <dir_genomes> -c <n_cpu> -f <[0|1]> -k <expression>\n[ERROR] launch failed! Please check the parameters!\n");
 
 if($dir_genomes eq ""){
-    print "::usage: $0 -d <dir_genomes> -c <n_cpu> -f <[0|1]>\n[ERROR] launch failed! Please check the parameters!\n";
+    print "::usage: $0 -d <dir_genomes> -c <n_cpu> -f <[0|1]> -k <expression>\n[ERROR] launch failed! Please check the parameters!\n";
     exit();
 }
 
@@ -50,8 +51,18 @@ print "::3..2..1..and...lift off -- $date";
 
     if($prokka eq "1"){
 
-   	 $cmd="satv_prokka-driver.pl -d ${dir_genomes} -c $n_cpu";
-   	 system($cmd);
+        if($knife ne ""){
+    	 $cmd="satv_prokka-driver.pl -d ${dir_genomes} -c $n_cpu -k $knife";
+     	 system($cmd);
+        
+        }
+        else{
+    	 $cmd="satv_prokka-driver.pl -d ${dir_genomes} -c $n_cpu";
+     	 system($cmd);
+  
+
+        }
+
     }
 
  

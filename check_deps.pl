@@ -6,7 +6,7 @@
 print "::I check if the dependences are installed\n";
 
 #java
-$ret=system("java -version > /dev/null");
+$ret=system("java -version 2>install_err.log > /dev/null");
 if($ret ne 0){
 	print "--please install java\n";
     	
@@ -183,7 +183,7 @@ else{
 
 
 #RAxML
-$ret=system("raxmlHPC-PTHREADS -version > /dev/null");
+$ret=system("raxmlHPC-PTHREADS -version 2>install_err.log > /dev/null");
 if($ret ne 0){
 	print "--please install RAxML\n";
     	
