@@ -1,13 +1,26 @@
 #!/usr/bin/perl -I /project/rclevesq/users/lfreschi/tasks/pangenome/saturnv/bin
 
-
-
-
 use LibFASTA;
 use Parallel::ForkManager;
 use Getopt::Long;
 
-GetOptions ("g=s" => \$genome_list,"c=s"   => \$n_cpu,"i=s"   => \$identity_usearch) or die("::usage: $0 -d <genomes_list> -c <n_cpu>\n");
+
+$genome_list="";
+$n_cpu=1;
+$identity_usearch=90;
+$identity_paralogs=90;
+
+GetOptions ("g=s" => \$genome_list,"c=s"   => \$n_cpu,"i=s"   => \$identity_usearch,"ip=s"   => \$identity_paralogs) or die("::usage: $0 -g <genomes_list> -c <n_cpu> -i <identity_usearch> -ip <identity_paralogs>\n[ERROR] launch failed! Please check the parameters!\n");
+
+if($genome_list eq ""){
+
+    print "::usage: $0 -g <genomes_list> -c <n_cpu> -i <identity_usearch> -ip <identity_paralogs>\n";
+    exit();
+}
+
+
+$convert_id_usearch=$identity_usearch/100;
+
 
 $manager = new Parallel::ForkManager($n_cpu);
 
@@ -20,6 +33,11 @@ chomp(@genomes);
 
 
 #I generate the db
+%db_elements=();
+@ids_first_genome;
+
+$first_genome=$genomes[0];
+
 for $genome (@genomes){
 
 
@@ -27,18 +45,55 @@ for $genome (@genomes){
     if(!(-e "${genome}.udb")){
     print "::indexing sequences -- ${genome}\n";
     `usearch8 -makeudb_usearch $genome -output ${genome}.udb >> log_file 2>&1`;
+
     }
+
+    print "determining the length of the sequences contained in genome $genome\n";
+    open(IN,"<$genome") or die("::I cannot open the file ${genome}\n");
+    while($line=<IN>){
+        chomp($line);
+        
+        
+        if($line eq ""){next;}
+        elsif($line=~/^>/){
+            $id=$line;
+            $id=~s/>//g;
+            $db_elements{$id}{"len"}=0;
+            $db_elements{$id}{"gen"}=$genome;
+            $db_elements{$id}{"seq"}="";
+            
+            if($genome eq $first_genome){
+                push(@ids_first_genome,$id);
+            }
+
+        }
+        else{
+            $db_elements{$id}{"len"}+=length($line);
+            $db_elements{$id}{"seq"}.=$line;
+        }
+
+    }    
+    
+
+    close(IN); 
+
+
+
 }
 
 
 
 
-$first_genome=$genomes[0];
+
+
+
 
 #I perform the usearch searches
 
 
 $new_blasts=0;
+
+
 
 for $genome (@genomes[0..$#genomes]){
     
@@ -48,7 +103,7 @@ for $genome (@genomes[0..$#genomes]){
   
   $manager->start and next;
     print "::performing usearch searches -- ${first_genome} vs ${genome}\n";
-    `usearch8 -usearch_local $first_genome -threads 1 -db ${genome}.udb -id $identity_usearch -blast6out ${genome}_blasted.txt >> log_file 2>&1`;
+    `usearch8 -usearch_local $first_genome -threads 1 -db ${genome}.udb -id $convert_id_usearch -blast6out ${genome}_blasted.txt >> log_file 2>&1`;
 
   $manager->finish;
 
@@ -61,47 +116,6 @@ for $genome (@genomes[0..$#genomes]){
 
 $manager->wait_all_children;
 
-
-
-
-%db_all_seq=();
-
-#I build the hash with the sequences
-print "::building the hash with the sequences\n";
-
-@ids_first_genome=();
-
-$ref=&LibFASTA::read_FASTA("$genomes[0]"," ","1");
-%current_hash=%$ref;
-
-    foreach $elem (keys(%current_hash)){
-        
-        if(exists($db_all_seq{$elem})){print "::[ERROR] Hey! There are two or more sequences with the same ID -- ID: $elem !\n";}
-
-        $db_all_seq{$elem}{"seq"}=$current_hash{$elem};
-        $db_all_seq{$elem}{"gen"}=$genomes[0];
-        push(@ids_first_genome,$elem);
-
-    }
-
-
-
-for $genome (@genomes[1..$#genomes]){
-
-$ref=&LibFASTA::read_FASTA("$genome"," ","1");
-%current_hash=%$ref;
-
-    foreach $elem (keys(%current_hash)){
-
-        $db_all_seq{$elem}{"seq"}=$current_hash{$elem};
-        $db_all_seq{$elem}{"gen"}=$genome;
-
-
-    }
-
-
-
-}
 
 print "::analyzing the usearch output\n";
 
@@ -131,24 +145,26 @@ if($new_blasts > 0){
         $query=$data[0];
         $exclusion_zone{$query}=1;
 
-        $genome_q=$db_all_seq{$query}{"gen"};
+        $genome_q=$db_elements{$query}{"gen"};
         #print $genome_q."\n";
         $results{$query}{$genome_q}{$query}=1;
 
 
-        if(exists($db_all_seq{$query})){
-            $length_query=length($db_all_seq{$query}{"seq"});
+        if(exists($db_elements{$query})){
+            $length_query=$db_elements{$query}{"len"};
         }
         else{
             print "::[ERROR] sequence $query not present in db of the hash %db_all_seq\n";
         }
         
         $hit=$data[1];
+
+        if($query eq $hit){next;}
         
         
-        if(exists($db_all_seq{$hit})){
-            $length_hit=length($db_all_seq{$hit}{"seq"});
-            $genome_id=$db_all_seq{$hit}{"gen"};
+        if(exists($db_elements{$hit})){
+            $length_hit=$db_elements{$hit}{"len"};
+            $genome_h=$db_elements{$hit}{"gen"};
             
         }
         else{
@@ -157,14 +173,47 @@ if($new_blasts > 0){
 
 
 
+        $perc_identity=$data[2];
+
         $length_alignment=$data[3];
         
        # print $query."-".$hit."-"."$identity"."-".$length_alignment."-".($length_query*0.85)."-".($length_hit*0.85)."\n";
 
         if(($length_alignment >= ($length_query*0.85)) and ($length_alignment >= ($length_hit*0.85)) ){
             
-            $results{$query}{$genome_id}{$hit}=1; 
-            $exclusion_zone{$hit}=1;   
+
+            if($genome_q eq $genome_h){
+                if($perc_identity < $identity_paralogs){next;}
+                
+            }        
+
+
+
+
+
+            
+            if(exists($results{$query}{$genome_h}{"hit"})){
+                
+                $prev_hit=$results{$query}{$genome_h}{"hit"};
+                $prev_hit_id=$results{$query}{$genome_h}{"id"};
+                
+                if($perc_identity > $prev_hit_id){
+
+
+                     $results{$query}{$genome_h}{"hit"}=$hit;
+                     $results{$query}{$genome_h}{"id"}=$perc_identity;
+                     $exclusion_zone{$hit}=1;
+                     delete($exclusion_zone{$prev_hit});
+                }            
+                
+
+
+            }else{            
+
+                $results{$query}{$genome_h}{"hit"}=$hit;
+                $results{$query}{$genome_h}{"id"}=$perc_identity;
+                $exclusion_zone{$hit}=1;
+            }
         
         }
         
@@ -172,6 +221,11 @@ if($new_blasts > 0){
 
     }
     close(IN);
+    
+
+
+    
+
 
 
     #foreach $test (keys(%results)){
@@ -200,14 +254,10 @@ if($new_blasts > 0){
 
 
 
-            if(exists($results{$entry}{$gen_id})){
+            if(exists($results{$entry}{$gen_id}{"hit"})){
             
-            $ref=$results{$entry}{$gen_id};
-            %hash_ref=%$ref;
-
-
-            @hits=sort(keys(%hash_ref));
-            push(@arr_to_print,join(",",@hits));
+   
+            push(@arr_to_print,$results{$entry}{$gen_id}{"hit"});
 
             }
             else{
@@ -227,15 +277,22 @@ if($new_blasts > 0){
 
 %new_sequences=();
 
+
+
+
+
+
+
+
 #I write the remaining sequences
 open(OUT,">new_sequences_iter1.faa");
-foreach $seq (keys(%db_all_seq)){
+foreach $seq (keys(%db_elements)){
     
     if(exists($exclusion_zone{$seq})){
         next;
     }else{
         print OUT ">$seq\n";
-        print OUT $db_all_seq{$seq}{"seq"}."\n";
+        print OUT $db_elements{$seq}{"seq"}."\n";
         $new_sequences{$seq}=1;
     }
 
@@ -278,7 +335,7 @@ for $genome (@genomes){
   $manager->start and next;
     print "::performing usearch searches -- new_sequences_iter1 vs ${genome}\n";
 
-    `usearch8 -usearch_local new_sequences_iter1.faa -threads 1 -db ${genome}.udb -id $identity_usearch -blast6out ${genome}_blasted_iter2.txt >> log_file 2>&1`;
+    `usearch8 -usearch_local new_sequences_iter1.faa -threads 1 -db ${genome}.udb -id $convert_id_usearch -blast6out ${genome}_blasted_iter2.txt >> log_file 2>&1`;
 
   $manager->finish;
     
@@ -310,40 +367,70 @@ if($new_blasts_iter2 > 0){
 
         $query=$data[0];
 
-        $genome_q=$db_all_seq{$query}{"gen"};
+        $genome_q=$db_elements{$query}{"gen"};
         #print $genome_q."\n";
         $results{$query}{$genome_q}{$query}=1;
 
 
-        if(exists($db_all_seq{$query})){
-            $length_query=length($db_all_seq{$query}{"seq"});
+        if(exists($db_elements{$query})){
+            $length_query=$db_elements{$query}{"len"};
         }
         else{
-            print "::[ERROR] sequence $query not present in db of the hash %db_all_seq\n";
+            print "::[ERROR] sequence $query not present in db of the hash %db_elements\n";
         }
     
         $hit=$data[1];
     
-      
+        if($query eq $hit){next;}
     
-        if(exists($db_all_seq{$hit})){
-            $length_hit=length($db_all_seq{$hit}{"seq"});
-            $genome_id=$db_all_seq{$hit}{"gen"};
+        if(exists($db_elements{$hit})){
+            $length_hit=$db_elements{$hit}{"len"};
+            $genome_h=$db_elements{$hit}{"gen"};
         }
         else{
-            print "::[ERROR] sequence $hit not present in db of the hash %db_all_seq\n";
+            print "::[ERROR] sequence $hit not present in db of the hash %db_elements\n";
         } 
 
 
 
+        $perc_identity=$data[2];
         $length_alignment=$data[3];
-
+        
+       # print $query."-".$hit."-"."$identity"."-".$length_alignment."-".($length_query*0.85)."-".($length_hit*0.85)."\n";
 
         if(($length_alignment >= ($length_query*0.85)) and ($length_alignment >= ($length_hit*0.85)) ){
+            
+
+            $genome_h=$db_elements{$hit}{"gen"};
+            if($genome_q eq $genome_h){
+                if($perc_identity < $identity_paralogs){next;}
+                
+            }   
+
+            
+            if(exists($results{$query}{$genome_h}{"hit"})){
+                
+                $prev_hit=$results{$query}{$genome_h}{"hit"};
+                $prev_hit_id=$results{$query}{$genome_h}{"id"};
+                
+                if($perc_identity > $prev_hit_id){
+
+
+                     $results{$query}{$genome_h}{"hit"}=$hit;
+                     $results{$query}{$genome_h}{"id"}=$perc_identity;
+
+
+                }            
+                
+
+
+            }else{            
+
+                $results{$query}{$genome_h}{"hit"}=$hit;
+                $results{$query}{$genome_h}{"id"}=$perc_identity;
+
+            }
         
-            $results{$query}{$genome_id}{$hit}=1; 
-            $exclusion_zone{$hit}=1;   
-    
         }
     
 
@@ -371,14 +458,16 @@ if($new_blasts_iter2 > 0){
             $gen_id=$gen;
 
 
-            if(exists($results{$entry}{$gen_id})){
-            $ref_r=$results{$entry}{$gen_id};
-            %hash_ref=%$ref_r;
+            if(exists($results{$entry}{$gen_id}{"hit"})){
 
-
-            @hits=sort(keys(%hash_ref));
-            push(@arr_to_print,join(",",@hits));
-
+                $target=$results{$entry}{$gen_id}{"hit"};
+    
+                if(exists($exclusion_zone{$target})){                        
+                    push(@arr_to_print,"-");
+                }
+                else{        
+                push(@arr_to_print,$target);
+                }
             }
             else{
                 push(@arr_to_print,"-");
@@ -400,8 +489,16 @@ else{
     print "::I have already made all the blasts of the second iteration. Everything is up-to-date! :)\n";
 }
 
+
+
+
 print "::Second iteration finished!\n";
 $date=`date "+%Y-%m-%d %H:%M:%S"`;
+
+
+
+$cmd="satv_merge-data3.pl -i situation_all.txt";
+system($cmd);
 
 
 
