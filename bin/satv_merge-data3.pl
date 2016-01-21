@@ -1,12 +1,20 @@
 #!/usr/bin/perl
 
-
 use Graph;
 use Getopt::Long;
 
+$file_in="";
+$file_out="";
 
-GetOptions ("i=s" => \$file_in) or die("::usage: $0 -i <input_file> \n");
 
+GetOptions ("in=s" => \$file_in,"out=s" => \$file_out) or die("::usage: $0 -in <input_file> -out <output_file>\n");
+
+
+if(($file_in eq "") or ($file_out eq "")){
+
+    print "::usage: $0 -in <input_file> -out <output_file>\n";
+    exit();
+}
 
 
 $graph = Graph::Undirected->new;
@@ -15,7 +23,7 @@ $graph = Graph::Undirected->new;
 print "::constructing the graph\n";
 $lines_read=0;
 
-open(IN,"<$file_in")or die "::[ERROR] I cannot open the file $file_in\n";
+open(IN,"<${file_in}")or die "::[ERROR] I cannot open the file $file_in\n";
 $comment=<IN>;
 chomp($comment);
 $header=$comment;
@@ -66,7 +74,7 @@ $comment=~s/.faa//g;
 
 
 
-open(OUT,">table_linked3.tsv");
+open(OUT,">${file_out}");
 print OUT $header."\n";
 
 $count=0;

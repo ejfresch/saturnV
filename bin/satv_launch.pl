@@ -2,32 +2,69 @@
 
 use Getopt::Long;
 use strict;
-#::usage $0 -d <dir_genomes> -c <n_cpu>
+
 
 my $dir_genomes="";
 my $n_cpu=1;
-my $fast=0;
-my $prokka=1;
+my $alg="usearch";
+my $method="strict";
+my $ann="prodigal";
 my $raxml=0;
 my $start_run;
 my $end_run;
 my $run_time;
-my $version = '1.0';
 my $date;
 my $cmd;
-my $identity;
-my $identity_usearch=0.6;
+my $identity_orthologs=90;
+my $identity_paralogs=90;
 my $bootstrap_num=100;
 my $bootstrap=1;
 my $knife="";
+my $force=0;
 
-GetOptions ("d=s" => \$dir_genomes,"c=s"   => \$n_cpu, "f=s"   => \$fast,"k=s"   => \$knife, "p=s"   => \$prokka, "r=s"   => \$raxml, "i=s"   => \$identity_usearch, "B=s"   => \$bootstrap_num) or die("::usage: $0 -d <dir_genomes> -c <n_cpu> -f <[0|1]> -k <expression>\n[ERROR] launch failed! Please check the parameters!\n");
+#here are the available algorithms for the search
+my %avail_algs=(
+    "usearch" => 1,
+    "blast" => 1
+);
+
+my %avail_methods=(
+    "lazy" => 1,
+    "strict" => 1,
+    "strictest" => 1
+
+);
+
+my %avail_ann=(
+    "prokka" => 1,
+    "prodigal" => 1
+
+);
+
+
+
+GetOptions ("d=s" => \$dir_genomes,"c=s"   => \$n_cpu, "ann=s"   => \$ann,"m=s"   => \$method,"a=s"   => \$alg,"k=s"   => \$knife, "r=s"   => \$raxml, "i=s"   => \$identity_orthologs,"ip=s"   => \$identity_paralogs, "B=s"   => \$bootstrap_num,"f=s" => $force) or die("::usage: $0 -d <dir_genomes> -c <n_cpu> -ann <annotation_software> -m <comparison_method> -a <algorithm> -f <force:[0|1]> -k <expression> -r <raxml:[0|1]> -i <perc_identity> -ip <perc_identity_paralogs> -B <bootstraps>\n[ERROR] launch failed! Please check the parameters!\n");
 
 if($dir_genomes eq ""){
-    print "::usage: $0 -d <dir_genomes> -c <n_cpu> -f <[0|1]> -k <expression>\n[ERROR] launch failed! Please check the parameters!\n";
+    print "::usage: $0 -d <dir_genomes> -c <n_cpu> -ann <annotation_software> -m <comparison_method> -a <algorithm> -f <force:[0|1]> -k <expression> -r <raxml:[0|1]> -i <perc_identity> -ip <perc_identity_paralogs> -B <bootstraps>\n[ERROR] launch failed! Please check the parameters!\n";
     exit();
 }
 
+
+if(!(exists($avail_algs{$alg}))){
+    print "::[ERROR] I do not know the search algorithm you specified\n";
+    exit();    
+}
+
+if(!(exists($avail_ann{$ann}))){
+    print "::[ERROR] I do not know the annotation software you specified\n";
+    exit();    
+}
+
+if(!(exists($avail_methods{$method}))){
+    print "::[ERROR] I do not know the method you specified\n";
+    exit();    
+}
 
 
 $date=`date "+%Y-%m-%d %H:%M:%S"`;
@@ -40,16 +77,12 @@ print "::3..2..1..and...lift off -- $date";
     print "::First stage\n";
     
 
-    if($prokka eq "0"){
+    if($ann eq "prodigal"){
 
    	 $cmd="satv_prodigal-driver.pl -d ${dir_genomes} -c $n_cpu";
    	 system($cmd);
     }
-
-
-
-
-    if($prokka eq "1"){
+    elsif($ann eq "prokka"){
 
         if($knife ne ""){
     	 $cmd="satv_prokka-driver.pl -d ${dir_genomes} -c $n_cpu -k $knife";
@@ -67,7 +100,7 @@ print "::3..2..1..and...lift off -- $date";
 
  
     
-    if(!(-e "genomes_to_analyze.txt")){
+    if((!(-e "genomes_to_analyze.txt"))or($force eq "1")){
 
            print "::Interstage -- generating the genomes_to_analyze.txt file\n";
     #I copy all the .faa files and generate the file genomes_to_analyze.txt
@@ -88,41 +121,23 @@ print "::3..2..1..and...lift off -- $date";
 
 
     #determining the pangenome --second stage
-    if($fast eq "0"){
+    if($method eq "lazy"){
 
-        $cmd="satv_pangenome4.pl -g genomes_to_analyze.txt -c $n_cpu";
+        $cmd="satv_search-pangenome-lazy.pl -g genomes_to_analyze.txt -c $n_cpu -i $identity_orthologs -f $force -a $alg";
+        system($cmd);
+    }
+    elsif($method eq "strict"){
+
+        $cmd="satv_search-pangenome-strict.pl -g genomes_to_analyze.txt -c $n_cpu -i $identity_orthologs -ip $identity_paralogs -f $force -a $alg";
+        system($cmd);
+    }
+    elsif($method eq "strictest"){
+
+        $cmd="satv_search-pangenome-strictest.pl -g genomes_to_analyze.txt -c $n_cpu -i $identity_orthologs -ip $identity_paralogs -f $force -a $alg";
         system($cmd);
     }
 
-     if($fast eq "1"){
 
-        $cmd="satv_pangenome4-fast.pl -g genomes_to_analyze.txt -c $n_cpu -i $identity_usearch";
-        system($cmd);
-    }
-
-
-
-    print "::Interstage -- merging blast results\n";
-
-    #determining the pangenome --second stage
-    $cmd='cp situation_iter1.txt situation_all.txt';
-    system($cmd);
-
-
-    $cmd='cat situation_iter2.txt | grep -v "#"  >> situation_all.txt';
-    system($cmd);
-
-
-
-
-#mergins the results -- third stage
-
-
-    print "::Third stage\n";
-    
-    #determining the pangenome --second stage
-    $cmd="satv_merge-data3.pl -i situation_all.txt";
-    system($cmd);
 
 
 
@@ -159,7 +174,7 @@ $date=`date "+%Y-%m-%d %H:%M:%S"`;
 # To know how many time was done since the script started
 $end_run = time();
 $run_time = $end_run - our $start_run;
-print "::Mission accomplished by SaturnV version $version in $run_time seconds -- $date\n";
+print "::Mission accomplished by SaturnV in $run_time seconds -- $date\n";
 
 
 

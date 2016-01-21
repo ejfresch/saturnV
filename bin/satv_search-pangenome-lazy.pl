@@ -7,19 +7,36 @@ use Getopt::Long;
 
 $genome_list="";
 $n_cpu=1;
-$identity_usearch=90;
+$identity=90;
+$force=0;
+$alg="usearch";
+
+#here are the available algorithms for the search
+%avail_algs=(
+"usearch" => 1,
+"blast" => 1
+);
 
 
+GetOptions ("g=s" => \$genome_list,"c=s"   => \$n_cpu,"i=s"   => \$identity,"f=s"   => \$force,"a=s"=> \$alg) or die("::usage: $0 -d <genomes_list> -c <n_cpu> -i <perc_identity> -f <force:[0|1]> -a <algorithm>\n");
 
-GetOptions ("g=s" => \$genome_list,"c=s"   => \$n_cpu,"i=s"   => \$identity_usearch) or die("::usage: $0 -d <genomes_list> -c <n_cpu> -i <identity_usearch>\n");
 
+if($genome_list eq ""){
 
-if($genomes_list eq ""){
-
-    print "::usage: $0 -g <genomes_list> -c <n_cpu> -i <identity_usearch>\n";
+    print "::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity> -f <force:[0|1]> -a <algorithm>\n";
     exit();
 }
 
+
+
+if(!(exists($avail_algs{$alg}))){
+    print "::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity> -f <force:[0|1]> -a <algorithm>\n";
+    exit();    
+}
+
+
+
+$identity_usearch=$identity/100;
 
 
 $manager = new Parallel::ForkManager($n_cpu);
@@ -37,10 +54,18 @@ for $genome (@genomes){
 
 
     
-    if(!(-e "${genome}.udb")){
+    if(((!(-e "${genome}.udb")) or ($force eq "1"))and ($alg eq "usearch")){
     print "::indexing sequences -- ${genome}\n";
     `usearch8 -makeudb_usearch $genome -output ${genome}.udb >> log_file 2>&1`;
     }
+
+    elsif(((!(-e "${genome}.pin")) or ($force eq "1")) and ($alg eq "blast")){
+    print "::indexing sequences -- ${genome}\n";
+    `makeblastdb -in $genome -dbtype prot > /dev/null`;
+    }
+
+
+
 }
 
 
@@ -55,7 +80,7 @@ $new_blasts=0;
 
 for $genome (@genomes[0..$#genomes]){
     
-  if(!(-e "${genome}_blasted.txt")){  
+  if(((!(-e "${genome}_blasted.txt")) or ($force eq "1")) and ($alg eq "usearch")){  
     
    $new_blasts++;  
   
@@ -68,6 +93,21 @@ for $genome (@genomes[0..$#genomes]){
     
 
   }  
+  elsif(((!(-e "${genome}_blasted.txt")) or ($force eq "1")) and ($alg eq "blast")){  
+    
+   $new_blasts++;  
+  
+  $manager->start and next;
+    print "::performing usearch searches -- ${first_genome} vs ${genome}\n";
+    `blastp -query $first_genome -db $genome -num_threads 1 -out ${genome}_blasted.txt -seg no -outfmt 6`;
+
+  $manager->finish;
+
+    
+
+  }  
+
+
 
 }
 
@@ -169,6 +209,8 @@ if($new_blasts > 0){
         } 
 
 
+        $identity_ali=$data[2];
+        if($identity_ali < $identity){next;}
 
         $length_alignment=$data[3];
         
@@ -274,18 +316,27 @@ undef %results;
 
 #I build the db
 
-if(!(-e "new_sequences_iter1.faa.udb")){
+if((!(-e "new_sequences_iter1.faa.udb")) or ($force eq "1")){
     `usearch8 -makeudb_usearch new_sequences_iter1.faa -output new_sequences_iter1.faa.udb >> log_file 2>&1`;
 
 
 }
+
+elsif(((!(-e "new_sequences_iter1.faa.pin")) or ($force eq "1")) and ($alg eq "blast")){
+
+    `makeblastdb -in new_sequences_iter1.faa -dbtype prot > /dev/null`;
+}
+
+
+
+
 # I run the comparisons
 
 $new_blasts_iter2=0;
 
 for $genome (@genomes){
 
-  if(!(-e "${genome}_blasted_iter2.txt")){  
+  if(((!(-e "${genome}_blasted_iter2.txt")) or ($force eq "1"))and ($alg eq "usearch")){  
 
   $new_blasts_iter2++;
   $manager->start and next;
@@ -298,6 +349,29 @@ for $genome (@genomes){
 
 
     }
+
+
+  elsif(((!(-e "${genome}_blasted_iter2.txt")) or ($force eq "1"))and ($alg eq "blast")){  
+
+  $new_blasts_iter2++;
+  $manager->start and next;
+    print "::performing usearch searches -- new_sequences_iter1 vs ${genome}\n";
+
+    `blastp -query new_sequences_iter1.faa -db $genome -num_threads 1 -out ${genome}_blasted_iter2.txt -seg no -outfmt 6`;
+
+ 
+
+  $manager->finish;
+    
+
+
+    }
+
+
+
+
+
+
 
 }
 $manager->wait_all_children;
@@ -346,6 +420,9 @@ if($new_blasts_iter2 > 0){
         else{
             print "::[ERROR] sequence $hit not present in db of the hash %db_all_seq\n";
         } 
+
+        $identity_ali=$data[2];
+        if($identity_ali < $identity){next;}
 
 
 
@@ -410,11 +487,21 @@ if($new_blasts_iter2 > 0){
 
 }
 else{
-    print "::I have already made all the blasts of the second iteration. Everything is up-to-date! :)\n";
+    print "::I have already made all the searches of the second iteration. Everything is up-to-date! :)\n";
 }
 
 print "::Second iteration finished!\n";
 $date=`date "+%Y-%m-%d %H:%M:%S"`;
+
+
+ $cmd='cp situation_iter1.txt situation_all.txt';
+ system($cmd);
+
+print "::Building the graph of all data\n";
+$cmd="satv_merge-data3.pl -in situation_all.txt -out table_linked4.tsv";
+system($cmd);
+
+
 
 
 

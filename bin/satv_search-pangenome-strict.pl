@@ -7,19 +7,28 @@ use Getopt::Long;
 
 $genome_list="";
 $n_cpu=1;
-$identity_usearch=90;
+$force=0;
+$identity_orthologs=90;
 $identity_paralogs=90;
+$alg="usearch";
 
-GetOptions ("g=s" => \$genome_list,"c=s"   => \$n_cpu,"i=s"   => \$identity_usearch,"ip=s"   => \$identity_paralogs) or die("::usage: $0 -g <genomes_list> -c <n_cpu> -i <identity_usearch> -ip <identity_paralogs>\n[ERROR] launch failed! Please check the parameters!\n");
+#here are the available algorithms for the search
+%avail_algs=(
+"usearch" => 1,
+"blast" => 1
+);
+
+
+GetOptions ("g=s" => \$genome_list,"c=s"   => \$n_cpu,"i=s"=> \$identity_orthologs,"ip=s"   => \$identity_paralogs) or die("::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity_orthologs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n[ERROR] launch failed! Please check the parameters!\n");
 
 if($genome_list eq ""){
 
-    print "::usage: $0 -g <genomes_list> -c <n_cpu> -i <identity_usearch> -ip <identity_paralogs>\n";
+    print "::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity_orthologs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n";
     exit();
 }
 
 
-$convert_id_usearch=$identity_usearch/100;
+$identity=$identity_orthologs/100;
 
 
 $manager = new Parallel::ForkManager($n_cpu);
@@ -42,11 +51,18 @@ for $genome (@genomes){
 
 
     
-    if(!(-e "${genome}.udb")){
+    if(((!(-e "${genome}.udb"))or ($force eq "1")) and ($alg eq "usearch")){
     print "::indexing sequences -- ${genome}\n";
     `usearch8 -makeudb_usearch $genome -output ${genome}.udb >> log_file 2>&1`;
 
     }
+    elsif(((!(-e "${genome}.pin")) or ($force eq "1")) and ($alg eq "blast")){
+    print "::indexing sequences -- ${genome}\n";
+    `makeblastdb -in $genome -dbtype prot > /dev/null`;
+    }
+
+
+
 
     print "determining the length of the sequences contained in genome $genome\n";
     open(IN,"<$genome") or die("::I cannot open the file ${genome}\n");
@@ -97,19 +113,35 @@ $new_blasts=0;
 
 for $genome (@genomes[0..$#genomes]){
     
-  if(!(-e "${genome}_blasted.txt")){  
+  if((!(-e "${genome}_blasted.txt"))or ($force eq "1")){  
     
    $new_blasts++;  
   
   $manager->start and next;
+
     print "::performing usearch searches -- ${first_genome} vs ${genome}\n";
-    `usearch8 -usearch_local $first_genome -threads 1 -db ${genome}.udb -id $convert_id_usearch -blast6out ${genome}_blasted.txt >> log_file 2>&1`;
+
+    if($alg eq "usearch"){
+    `usearch8 -usearch_local $first_genome -threads 1 -db ${genome}.udb -id $identity -blast6out ${genome}_blasted.txt >> log_file 2>&1`;
+    }
+    elsif{
+    `blastp -query $first_genome -db $genome -num_threads 1 -out ${genome}_blasted.txt -seg no -outfmt 6`;    
+    }
+
 
   $manager->finish;
 
     
 
   }  
+
+
+
+
+
+
+
+
 
 }
 
@@ -174,6 +206,8 @@ if($new_blasts > 0){
 
 
         $perc_identity=$data[2];
+
+        if($perc_identity<$identity_orthologs){next;}
 
         $length_alignment=$data[3];
         
@@ -318,24 +352,44 @@ undef %results;
 
 #I build the db
 
-if(!(-e "new_sequences_iter1.faa.udb")){
+if(((!(-e "new_sequences_iter1.faa.udb")) or ($force eq "1")) and ($alg eq "usearch")){
     `usearch8 -makeudb_usearch new_sequences_iter1.faa -output new_sequences_iter1.faa.udb >> log_file 2>&1`;
 
+}
+elsif(((!(-e "new_sequences_iter1.faa.pin")) or ($force eq "1")) and ($alg eq "blast")){
+
+     `makeblastdb -in new_sequences_iter1.faa -dbtype prot > /dev/null`;
 
 }
+
+
+
 # I run the comparisons
 
 $new_blasts_iter2=0;
 
 for $genome (@genomes){
 
-  if(!(-e "${genome}_blasted_iter2.txt")){  
+  if((!(-e "${genome}_blasted_iter2.txt")) or ($force eq "1")){  
 
   $new_blasts_iter2++;
   $manager->start and next;
     print "::performing usearch searches -- new_sequences_iter1 vs ${genome}\n";
 
-    `usearch8 -usearch_local new_sequences_iter1.faa -threads 1 -db ${genome}.udb -id $convert_id_usearch -blast6out ${genome}_blasted_iter2.txt >> log_file 2>&1`;
+
+
+    
+
+    if($alg eq "usearch"){
+`usearch8 -usearch_local new_sequences_iter1.faa -threads 1 -db ${genome}.udb -id $convert_id_usearch -blast6out ${genome}_blasted_iter2.txt >> log_file 2>&1`;
+    }
+    elsif{
+    `blastp -query new_sequences_iter1.faa -db $genome -num_threads 1 -out ${genome}_blasted_iter2.txt -seg no -outfmt 6`;    
+    }
+
+
+
+
 
   $manager->finish;
     
@@ -394,6 +448,8 @@ if($new_blasts_iter2 > 0){
 
 
         $perc_identity=$data[2];
+
+        if($perc_identity<$identity_orthologs){next;}
         $length_alignment=$data[3];
         
        # print $query."-".$hit."-"."$identity"."-".$length_alignment."-".($length_query*0.85)."-".($length_hit*0.85)."\n";
@@ -497,8 +553,13 @@ $date=`date "+%Y-%m-%d %H:%M:%S"`;
 
 
 
-$cmd="satv_merge-data3.pl -i situation_all.txt";
+$cmd="satv_merge-data3.pl -in situation_all.txt -out pre_table_linked.tsv";
 system($cmd);
+
+
+$cmd="satv_untie-knots-paralogs.pl -in pre_table_linked.tsv -out table_linked4.tsv";
+system($cmd);
+
 
 
 

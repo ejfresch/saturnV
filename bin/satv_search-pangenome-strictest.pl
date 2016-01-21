@@ -7,18 +7,33 @@ use Graph;
 
 $genome_list="";
 $n_cpu=1;
-$identity_usearch=90;
+$force=0;
+$identity_orthologs=90;
 $identity_paralogs=90;
+$alg="usearch";
 
-GetOptions ("g=s" => \$genome_list,"c=s"   => \$n_cpu,"i=s"   => \$identity_usearch,"ip=s"   => \$identity_paralogs) or die("::usage: $0 -g <genomes_list> -c <n_cpu> -i <identity_usearch> -ip <identity_paralogs>\n[ERROR] launch failed! Please check the parameters!\n");
+#here are the available algorithms for the search
+%avail_algs=(
+"usearch" => 1,
+"blast" => 1
+);
+
+
+GetOptions ("g=s" => \$genome_list,"c=s"   => \$n_cpu,"i=s"   => \$identity_orthologs,"ip=s"   => \$identity_paralogs,"f=s"   => \$force,"a=s"=> \$alg) or die("::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity_orthlogs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n[ERROR] launch failed! Please check the parameters!\n");
 
 if($genome_list eq ""){
-
-    print "::usage: $0 -g <genomes_list> -c <n_cpu> -i <identity_usearch> -ip <identity_paralogs>\n";
+    print "::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity_orthlogs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n";
     exit();
 }
 
+if(!(exists($avail_algs{$alg}))){
+    print "::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity_orthlogs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n";
+    exit();    
+}
 
+
+
+$identity_orthologs_usearch=$identity_orthologs/100;
 
 
 $manager = new Parallel::ForkManager($n_cpu);
@@ -38,11 +53,17 @@ for $genome (@genomes){
 
 
     
-    if(!(-e "${genome}.udb")){
+    if(((!(-e "${genome}.udb")) or ($force eq "1")) and ($alg eq "usearch")){
     print "::indexing sequences -- ${genome}\n";
     `usearch8 -makeudb_usearch $genome -output ${genome}.udb >> log_file 2>&1`;
 
     }
+    elsif(((!(-e "${genome}.pin")) or ($force eq "1")) and ($alg eq "blast")){
+    print "::indexing sequences -- ${genome}\n";
+    `makeblastdb -in $genome -dbtype prot > /dev/null`;
+    }
+
+
 
     print "determining the length of the sequences contained in genome $genome\n";
     open(IN,"<$genome") or die("::I cannot open the file ${genome}\n");
@@ -85,11 +106,21 @@ for($i=0;$i<=$#genomes;$i++){
 
     for($j=0;$j<=$#genomes;$j++){
         
-        if(!(-e "$genome[$i]_vs_$genome[$j]_complete-search.txt")){
+        if((!(-e "$genome[$i]_vs_$genome[$j]_complete-search.txt"))or ($force eq "1")){
 
         $manager->start and next;
         print "::performing usearch searches -- ${first_genome} vs ${genome}\n";
-        `usearch8 -usearch_local $genome[$i] -threads 1 -db $genome[$j].udb -id $identity_usearch -blast6out $genome[$i]_vs_$genome[$j]_complete-search.txt >> log_file 2>&1`;
+
+
+        if($alg eq "usearch"){`usearch8 -usearch_local $genome[$i] -threads 1 -db $genome[$j].udb -id $identity_usearch -blast6out $genome[$i]_vs_$genome[$j]_complete-search.txt >> log_file 2>&1`;
+        }
+        elsif($alg eq "blast"){
+             `blastp -query $first_genome -db $genome -num_threads 1 -out $genome[$i]_vs_$genome[$j]_complete-search.txt -seg no -outfmt 6`;
+
+        }
+
+
+
 
         $manager->finish;
         }
@@ -141,6 +172,10 @@ while($line=<IN>){
 
 
         $perc_identity=$data[2];
+
+        #useful for blast
+        if($perc_identity < $identity_orthologs){next;}
+        
         $length_alignment=$data[3];
         
        # print $query."-".$hit."-"."$identity"."-".$length_alignment."-".($length_query*0.85)."-".($length_hit*0.85)."\n";
