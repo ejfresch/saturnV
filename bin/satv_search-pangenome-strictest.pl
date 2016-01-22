@@ -1,4 +1,4 @@
-#!/usr/bin/perl -I /project/rclevesq/users/lfreschi/tasks/pangenome/saturnv/bin
+#!/usr/bin/perl -I /home/avincent/Desktop/saturnV/bin
 
 
 use Parallel::ForkManager;
@@ -56,7 +56,7 @@ for $genome (@genomes){
     if(((!(-e "${genome}.udb")) or ($force eq "1")) and ($alg eq "usearch")){
     print "::indexing sequences -- ${genome}\n";
     `usearch8 -makeudb_usearch $genome -output ${genome}.udb >> log_file 2>&1`;
-
+	print "here\n";
     }
     elsif(((!(-e "${genome}.pin")) or ($force eq "1")) and ($alg eq "blast")){
     print "::indexing sequences -- ${genome}\n";
@@ -71,7 +71,7 @@ for $genome (@genomes){
         chomp($line);
         
         
-        if($line en ""){next;}
+        if($line eq ""){next;}
         elsif($line=~/^>/){
             $id=$line;
             $id=~s/>//g;
@@ -106,13 +106,13 @@ for($i=0;$i<=$#genomes;$i++){
 
     for($j=0;$j<=$#genomes;$j++){
         
-        if((!(-e "$genome[$i]_vs_$genome[$j]_complete-search.txt"))or ($force eq "1")){
+        if((!(-e "$genomes[$i]_vs_$genomes[$j]_complete-search.txt"))or ($force eq "1")){
 
         $manager->start and next;
-        print "::performing usearch searches -- ${first_genome} vs ${genome}\n";
+        print "::performing usearch searches -- $genomes[$i] vs $genomes[$j] -- algorithm: $alg\n";
 
 
-        if($alg eq "usearch"){`usearch8 -usearch_local $genome[$i] -threads 1 -db $genome[$j].udb -id $identity_usearch -blast6out $genome[$i]_vs_$genome[$j]_complete-search.txt >> log_file 2>&1`;
+        if($alg eq "usearch"){`usearch8 -usearch_local $genomes[$i] -threads 1 -db $genomes[$j].udb -id $identity_orthologs_usearch -blast6out $genomes[$i]_vs_$genomes[$j]_complete-search.txt >> log_file 2>&1`;
         }
         elsif($alg eq "blast"){
              `blastp -query $first_genome -db $genome -num_threads 1 -out $genome[$i]_vs_$genome[$j]_complete-search.txt -seg no -outfmt 6`;
@@ -134,7 +134,7 @@ for($i=0;$i<=$#genomes;$i++){
 
 $manager->wait_all_children;
 
-`cat *_complete_search.txt > db_complete_search.txt`;
+`cat *_complete-search.txt > db_complete_search.txt`;
 
 
 %results=();
@@ -152,7 +152,7 @@ while($line=<IN>){
         if($query eq $hit){next;}
     
         if(exists($db_elements{$query})){
-            $length_hit=$db_elements{$query}{"len"});
+            $length_hit=$db_elements{$query}{"len"};
             $genome_q=$db_elements{$query}{"gen"};
         }
         else{
@@ -162,7 +162,7 @@ while($line=<IN>){
 
     
         if(exists($db_elements{$hit})){
-            $length_hit=$db_elements{$hit}{"len"});
+            $length_hit=$db_elements{$hit}{"len"};
             $genome_h=$db_elements{$hit}{"gen"};
         }
         else{
@@ -221,7 +221,7 @@ while($line=<IN>){
     
 
 
-}
+
 
 close(IN);
 
