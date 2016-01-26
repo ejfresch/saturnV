@@ -1,4 +1,4 @@
-#!/usr/bin/perl -I /project/rclevesq/users/lfreschi/tasks/pangenome/saturnv/bin
+#!/usr/bin/perl -I /home/avincent/Desktop/saturnV/bin
 
 use LibFASTA;
 use Parallel::ForkManager;
@@ -19,8 +19,7 @@ $alg="usearch";
 );
 
 
-GetOptions ("g=s" => \$genome_list,"c=s"   => \$n_cpu,"i=s"=> \$identity_orthologs,"ip=s"   => \$identity_paralogs) or die("::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity_orthologs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n[ERROR] launch failed! Please check the parameters!\n");
-
+GetOptions ("g=s" => \$genome_list,"c=s"   => \$n_cpu,"i=s"   => \$identity_orthologs,"ip=s"   => \$identity_paralogs,"f=s"   => \$force,"a=s"=> \$alg) or die("::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity_orthlogs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n[ERROR] launch failed! Please check the parameters!\n");
 if($genome_list eq ""){
 
     print "::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity_orthologs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n";
@@ -52,12 +51,12 @@ for $genome (@genomes){
 
     
     if(((!(-e "${genome}.udb"))or ($force eq "1")) and ($alg eq "usearch")){
-    print "::indexing sequences -- ${genome}\n";
+    print "::indexing sequences -- ${genome} -- algorithm: $alg\n";
     `usearch8 -makeudb_usearch $genome -output ${genome}.udb >> log_file 2>&1`;
 
     }
     elsif(((!(-e "${genome}.pin")) or ($force eq "1")) and ($alg eq "blast")){
-    print "::indexing sequences -- ${genome}\n";
+    print "::indexing sequences -- ${genome} -- algorithm: $alg\n";
     `makeblastdb -in $genome -dbtype prot > /dev/null`;
     }
 
@@ -124,7 +123,7 @@ for $genome (@genomes[0..$#genomes]){
     if($alg eq "usearch"){
     `usearch8 -usearch_local $first_genome -threads 1 -db ${genome}.udb -id $identity -blast6out ${genome}_blasted.txt >> log_file 2>&1`;
     }
-    elsif{
+    elsif($alg eq "blast"){
     `blastp -query $first_genome -db $genome -num_threads 1 -out ${genome}_blasted.txt -seg no -outfmt 6`;    
     }
 
@@ -168,7 +167,7 @@ if($new_blasts > 0){
     #sequences for which I already found a match and therefore can be excluded from further analysis
     %exclusion_zone=();
 
-    open(IN,"all_blasted.txt")||die "I cannot open all_blasted.txt";
+    open(IN,"<all_blasted.txt")||die "I cannot open all_blasted.txt";
     while($line=<IN>){
         chomp($line);
         #print $line."\n";
@@ -262,7 +261,7 @@ if($new_blasts > 0){
 
 
 
-    #foreach $test (keys(%results)){
+    #foreach $test (keys(%results)){$cmd="usearch8 -usearch_local new_sequences_iter1.faa -threads 1 -db ${genome}.udb -id $convert_id_usearch -blast6out ${genome}_blasted_iter2.txt >> log_file 2>&1";
 
     #    print $test." >> ";
     #    $rr=$results{$test};
@@ -325,6 +324,7 @@ foreach $seq (keys(%db_elements)){
     if(exists($exclusion_zone{$seq})){
         next;
     }else{
+	#print $seq."\n";
         print OUT ">$seq\n";
         print OUT $db_elements{$seq}{"seq"}."\n";
         $new_sequences{$seq}=1;
@@ -377,14 +377,14 @@ for $genome (@genomes){
     print "::performing usearch searches -- new_sequences_iter1 vs ${genome}\n";
 
 
-
-    
-
     if($alg eq "usearch"){
-`usearch8 -usearch_local new_sequences_iter1.faa -threads 1 -db ${genome}.udb -id $convert_id_usearch -blast6out ${genome}_blasted_iter2.txt >> log_file 2>&1`;
+$cmd="usearch8 -usearch_local new_sequences_iter1.faa -threads 1 -db ${genome}.udb -id $identity -blast6out ${genome}_blasted_iter2.txt >> log_file 2>&1";
+	system($cmd);
     }
-    elsif{
-    `blastp -query new_sequences_iter1.faa -db $genome -num_threads 1 -out ${genome}_blasted_iter2.txt -seg no -outfmt 6`;    
+
+    elsif($alg eq "blast"){
+    $cmd="blastp -query new_sequences_iter1.faa -db $genome -num_threads 1 -out ${genome}_blasted_iter2.txt -seg no -outfmt 6";
+	system($cmd);    
     }
 
 
@@ -551,6 +551,9 @@ else{
 print "::Second iteration finished!\n";
 $date=`date "+%Y-%m-%d %H:%M:%S"`;
 
+
+`cat situation_iter1.txt > situation_all.txt`;
+`cat situation_iter2.txt|tail -n+2 >> situation_all.txt`; 
 
 
 $cmd="satv_merge-data3.pl -in situation_all.txt -out pre_table_linked.tsv";
