@@ -56,7 +56,7 @@ for $genome (@genomes){
     if(((!(-e "${genome}.udb")) or ($force eq "1")) and ($alg eq "usearch")){
     print "::indexing sequences -- ${genome}\n";
     `usearch8 -makeudb_usearch $genome -output ${genome}.udb >> log_file 2>&1`;
-	print "here\n";
+	#print "here\n";
     }
     elsif(((!(-e "${genome}.pin")) or ($force eq "1")) and ($alg eq "blast")){
     print "::indexing sequences -- ${genome}\n";
@@ -109,12 +109,15 @@ for($i=0;$i<=$#genomes;$i++){
         if((!(-e "$genomes[$i]_vs_$genomes[$j]_complete-search.txt"))or ($force eq "1")){
 
         $manager->start and next;
-        print "::performing usearch searches -- $genomes[$i] vs $genomes[$j] -- algorithm: $alg\n";
 
 
-        if($alg eq "usearch"){`usearch8 -usearch_local $genomes[$i] -threads 1 -db $genomes[$j].udb -id $identity_orthologs_usearch -blast6out $genomes[$i]_vs_$genomes[$j]_complete-search.txt >> log_file 2>&1`;
+
+        if($alg eq "usearch"){
+        print "::performing $alg searches -- $genomes[$i] vs $genomes[$j]\n";
+`usearch8 -usearch_local $genomes[$i] -threads 1 -db $genomes[$j].udb -id $identity_orthologs_usearch -blast6out $genomes[$i]_vs_$genomes[$j]_complete-search.txt >> log_file 2>&1`;
         }
         elsif($alg eq "blast"){
+              print "::performing $alg searches -- $genomes[$i] vs $genomes[$j]\n";
              `blastp -query $first_genome -db $genome -num_threads 1 -out $genome[$i]_vs_$genome[$j]_complete-search.txt -seg no -outfmt 6`;
 
         }
@@ -137,6 +140,11 @@ $manager->wait_all_children;
 `cat *_complete-search.txt > db_complete_search.txt`;
 
 
+
+open(O2,">dump_data-searches.txt");
+
+print O2 "#query\thit\tidentity\tlength_ali\tthreshold_query\tthreshold_hit\tdecision\n";
+
 %results=();
 open(IN,"<db_complete_search.txt");
 while($line=<IN>){
@@ -152,7 +160,7 @@ while($line=<IN>){
         if($query eq $hit){next;}
     
         if(exists($db_elements{$query})){
-            $length_hit=$db_elements{$query}{"len"};
+            $length_query=$db_elements{$query}{"len"};
             $genome_q=$db_elements{$query}{"gen"};
         }
         else{
@@ -177,11 +185,17 @@ while($line=<IN>){
         if($perc_identity < $identity_orthologs){next;}
         
         $length_alignment=$data[3];
+
+
+        print O2 $query."\t".$hit."\t".$perc_identity."\t".$length_alignment."\t".($length_query*0.85)."\t".($length_hit*0.85)."\t";
+
+
         
        # print $query."-".$hit."-"."$identity"."-".$length_alignment."-".($length_query*0.85)."-".($length_hit*0.85)."\n";
 
         if(($length_alignment >= ($length_query*0.85)) and ($length_alignment >= ($length_hit*0.85)) ){
-            
+           
+            print O2 "Yes\n"; 
 
             if($genome_q eq $genome_h){
                 if($perc_identity < $identity_paralogs){next;}
@@ -189,16 +203,16 @@ while($line=<IN>){
             }   
 
             
-            if(exists($results{$query}{$genome_id}{"hit"})){
+            if(exists($results{$query}{$genome_h}{"hit"})){
                 
-                $prev_hit=$results{$query}{$genome_id}{"hit"};
-                $prev_hit_id=$results{$query}{$genome_id}{"id"};
+                $prev_hit=$results{$query}{$genome_h}{"hit"};
+                $prev_hit_id=$results{$query}{$genome_h}{"id"};
                 
                 if($perc_identity > $prev_hit_id){
 
 
-                     $results{$query}{$genome_id}{"hit"}=$hit;
-                     $results{$query}{$genome_id}{"id"}=$perc_identity;
+                     $results{$query}{$genome_h}{"hit"}=$hit;
+                     $results{$query}{$genome_h}{"id"}=$perc_identity;
 
 
                 }            
@@ -207,12 +221,12 @@ while($line=<IN>){
 
             }else{            
 
-                $results{$query}{$genome_id}{"hit"}=$hit;
-                $results{$query}{$genome_id}{"id"}=$perc_identity;
+                $results{$query}{$genome_h}{"hit"}=$hit;
+                $results{$query}{$genome_h}{"id"}=$perc_identity;
 
             }
         
-        }
+        }else{print O2 "No\n";}
     
 
 
@@ -224,6 +238,9 @@ while($line=<IN>){
 
 
 close(IN);
+
+close(O2);
+
 
 
 #I write all data
@@ -286,9 +303,9 @@ foreach $c (@cc){
     foreach $element (@current_cc){
 
         if($element eq "-"){next;}
-        print $element."\n";
+        #print $element."\n";
         @explode=split(/_/,$element);
-        print $explode[0]."\n";
+        #print $explode[0]."\n";
         $hash_results{$explode[0]}{$element}=1;        
 
 
@@ -300,7 +317,7 @@ foreach $c (@cc){
     foreach $genome (@genomes){
 
     $genome=~s/.faa//g;    
-    print $genome."\n";
+    #print $genome."\n";
     if(exists($hash_results{$genome})){
        
         $ref=$hash_results{$genome};
