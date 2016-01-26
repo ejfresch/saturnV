@@ -136,7 +136,7 @@ chomp($line);
         if($query eq $hit){next;}
     
         if(exists($db_elements{$query})){
-            $length_hit=$db_elements{$query}{"len"};
+            $length_query=$db_elements{$query}{"len"};
             $genome_q=$db_elements{$query}{"gen"};
         }
         else{print "::[ERROR] sequence $query not present in db of the hash db_elements\n";} 
@@ -161,16 +161,16 @@ chomp($line);
             }   
 
             
-            if(exists($results{$query}{$genome_id}{"hit"})){
+            if(exists($results{$query}{$genome_h}{"hit"})){
                 
-                $prev_hit=$results{$query}{$genome_id}{"hit"};
-                $prev_hit_id=$results{$query}{$genome_id}{"id"};
+                $prev_hit=$results{$query}{$genome_h}{"hit"};
+                $prev_hit_id=$results{$query}{$genome_h}{"id"};
                 
                 if($perc_identity > $prev_hit_id){
 
 
-                     $results{$query}{$genome_id}{"hit"}=$hit;
-                     $results{$query}{$genome_id}{"id"}=$perc_identity;
+                     $results{$query}{$genome_h}{"hit"}=$hit;
+                     $results{$query}{$genome_h}{"id"}=$perc_identity;
 
 
                 }            
@@ -179,8 +179,8 @@ chomp($line);
 
             }else{            
 
-                $results{$query}{$genome_id}{"hit"}=$hit;
-                $results{$query}{$genome_id}{"id"}=$perc_identity;
+                $results{$query}{$genome_h}{"hit"}=$hit;
+                $results{$query}{$genome_h}{"id"}=$perc_identity;
 
             }
         
