@@ -1,21 +1,23 @@
 #!/usr/bin/perl -I /home/avincent/Desktop/saturnV/bin
 
+use strict;
 
 use Parallel::ForkManager;
 use Getopt::Long;
 use Graph;
 
-$genome_list="";
-$n_cpu=1;
-$force=0;
-$identity_orthologs=90;
-$identity_paralogs=90;
-$alg="usearch";
+
+my $genome_list="";
+my $n_cpu=1;
+my $force=0;
+my $identity_orthologs=90;
+my $identity_paralogs=90;
+my $alg="usearch";
 
 #here are the available algorithms for the search
-%avail_algs=(
-"usearch" => 1,
-"blast" => 1
+my %avail_algs=(
+    "usearch" => 1,
+    "blast" => 1
 );
 
 
@@ -33,23 +35,23 @@ if(!(exists($avail_algs{$alg}))){
 
 
 
-$identity_orthologs_usearch=$identity_orthologs/100;
+my $identity_orthologs_usearch=$identity_orthologs/100;
 
 
-$manager = new Parallel::ForkManager($n_cpu);
+my $manager = new Parallel::ForkManager($n_cpu);
 
-$date=`date "+%Y-%m-%d %H:%M:%S"`;
+my $date=`date "+%Y-%m-%d %H:%M:%S"`;
 print "::Starting analysis at $date";
 
 
-@genomes=`cat $genome_list`;
+my @genomes=`cat $genome_list`;
 chomp(@genomes);
 
 
 #I generate the db
 
-%db_elements=();
-for $genome (@genomes){
+my %db_elements=();
+for my $genome (@genomes){
 
 
     
@@ -66,8 +68,10 @@ for $genome (@genomes){
 
 
     print "determining the length of the sequences contained in genome $genome\n";
+
+    my $id;
     open(IN,"<$genome") or die("::I cannot open the file ${genome}\n");
-    while($line=<IN>){
+    while(my $line=<IN>){
         chomp($line);
         
         
@@ -102,9 +106,9 @@ for $genome (@genomes){
 
 
 
-for($i=0;$i<=$#genomes;$i++){
+for(my $i=0;$i<=$#genomes;$i++){
 
-    for($j=0;$j<=$#genomes;$j++){
+    for(my $j=0;$j<=$#genomes;$j++){
         
         if((!(-e "$genomes[$i]_vs_$genomes[$j]_complete-search.txt"))or ($force eq "1")){
 
@@ -118,7 +122,7 @@ for($i=0;$i<=$#genomes;$i++){
         }
         elsif($alg eq "blast"){
               print "::performing $alg searches -- $genomes[$i] vs $genomes[$j]\n";
-             `blastp -query $first_genome -db $genome -num_threads 1 -out $genome[$i]_vs_$genome[$j]_complete-search.txt -seg no -outfmt 6`;
+             `blastp -query $genomes[$i] -db $genomes[$j] -num_threads 1 -out $genomes[$i]_vs_$genomes[$j]_complete-search.txt -seg no -outfmt 6`;
 
         }
 
@@ -145,20 +149,28 @@ open(O2,">dump_data-searches.txt");
 
 print O2 "#query\thit\tidentity\tlength_ali\tthreshold_query\tthreshold_hit\tdecision\n";
 
-%results=();
+my %results=();
 open(IN,"<db_complete_search.txt");
-while($line=<IN>){
+while(my $line=<IN>){
      chomp($line);
         #print $line."\n";
-        @data=split(/\t/,$line);
+        my @data=split(/\t/,$line);
 
-        $query=$data[0];
+        my $query=$data[0];
 
         
-        $hit=$data[1];
+        my $hit=$data[1];
 
         if($query eq $hit){next;}
     
+	my $length_query;
+	my $genome_q;
+	my $length_hit;
+	my $genome_h;
+	my $perc_identity;
+	my $length_alignment;
+
+
         if(exists($db_elements{$query})){
             $length_query=$db_elements{$query}{"len"};
             $genome_q=$db_elements{$query}{"gen"};
@@ -204,9 +216,10 @@ while($line=<IN>){
 
             
             if(exists($results{$query}{$genome_h}{"hit"})){
+
                 
-                $prev_hit=$results{$query}{$genome_h}{"hit"};
-                $prev_hit_id=$results{$query}{$genome_h}{"id"};
+                my $prev_hit=$results{$query}{$genome_h}{"hit"};
+                my $prev_hit_id=$results{$query}{$genome_h}{"id"};
                 
                 if($perc_identity > $prev_hit_id){
 
@@ -245,13 +258,13 @@ close(O2);
 
 #I write all data
 open(OUT,">db_complete_search_filtered.txt");
-foreach $q (keys(%results)){
+foreach my $q (keys(%results)){
 
-    $ref=$results{$q};
+    my $ref=$results{$q};
 
-    %hash=%$ref;
+    my %hash=%$ref;
 
-    foreach $k (keys(%hash)){
+    foreach my $k (keys(%hash)){
         print OUT "$q\t".$results{$q}{$k}{"hit"}."\n";
 
     }
@@ -269,10 +282,10 @@ my $g = Graph->new;
 
 open(IN,"<db_complete_search_filtered.txt");
 
-while($line=<IN>){
+while(my $line=<IN>){
     chomp($line);
     if($line eq ""){next;}
-    @el_fragmented=split(/\t/,$line);
+    my @el_fragmented=split(/\t/,$line);
     #print join("^",@el_fragmented)."\n";        
     $g->add_path(@el_fragmented);
 
@@ -283,7 +296,7 @@ close(IN);
 
 
 print "::perl is determining the strongly connected components of the graph\n";
-@cc=$g->strongly_connected_components();
+my @cc=$g->strongly_connected_components();
 
 
 
@@ -292,19 +305,19 @@ print "::perl is determining the strongly connected components of the graph\n";
 open(OUT,">table_linked3.tsv");
 print OUT join("\t",@genomes)."\n";
 
-$count=0;
-foreach $c (@cc){
-    $count++;
+my $count=0;
+foreach my $c (@cc){
+    my $count++;
     print "::writing down the strongly connected components of the graph (${count})\n";
 
 
-    %hash_results=();
-    @current_cc=@$c;
-    foreach $element (@current_cc){
+    my %hash_results=();
+    my @current_cc=@$c;
+    foreach my $element (@current_cc){
 
         if($element eq "-"){next;}
         #print $element."\n";
-        @explode=split(/_/,$element);
+        my @explode=split(/_/,$element);
         #print $explode[0]."\n";
         $hash_results{$explode[0]}{$element}=1;        
 
@@ -312,17 +325,17 @@ foreach $c (@cc){
      
     }
 
-    @final_arr=();    
+    my @final_arr=();    
     
-    foreach $genome (@genomes){
+    foreach my $genome (@genomes){
 
     $genome=~s/.faa//g;    
     #print $genome."\n";
     if(exists($hash_results{$genome})){
        
-        $ref=$hash_results{$genome};
+        my $ref=$hash_results{$genome};
 
-        %arr=%$ref;
+        my %arr=%$ref;
         push(@final_arr,join(",",sort(keys(%arr))));
     }
     else{push(@final_arr,"-");}

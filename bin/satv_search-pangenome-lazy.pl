@@ -1,20 +1,22 @@
 #!/usr/bin/perl -I /project/rclevesq/users/lfreschi/tasks/pangenome/saturnv/bin
 
+
+use strict;
 use LibFASTA;
 use Parallel::ForkManager;
 use Getopt::Long;
 
 
-$genome_list="";
-$n_cpu=1;
-$identity=90;
-$force=0;
-$alg="usearch";
+my $genome_list="";
+my $n_cpu=1;
+my $identity=90;
+my $force=0;
+my $alg="usearch";
 
 #here are the available algorithms for the search
-%avail_algs=(
-"usearch" => 1,
-"blast" => 1
+my %avail_algs=(
+    "usearch" => 1,
+    "blast" => 1
 );
 
 
@@ -36,21 +38,21 @@ if(!(exists($avail_algs{$alg}))){
 
 
 
-$identity_usearch=$identity/100;
+my $identity_usearch=$identity/100;
 
 
-$manager = new Parallel::ForkManager($n_cpu);
+my $manager = new Parallel::ForkManager($n_cpu);
 
-$date=`date "+%Y-%m-%d %H:%M:%S"`;
+my $date=`date "+%Y-%m-%d %H:%M:%S"`;
 print "::Starting analysis at $date";
 
 
-@genomes=`cat $genome_list`;
+my @genomes=`cat $genome_list`;
 chomp(@genomes);
 
 
 #I generate the db
-for $genome (@genomes){
+for my $genome (@genomes){
 
 
     
@@ -71,14 +73,14 @@ for $genome (@genomes){
 
 
 
-$first_genome=$genomes[0];
+my $first_genome=$genomes[0];
 
 #I perform the usearch searches
 
 
-$new_blasts=0;
+my $new_blasts=0;
 
-for $genome (@genomes[0..$#genomes]){
+for my $genome (@genomes[0..$#genomes]){
     
   if(((!(-e "${genome}_blasted.txt")) or ($force eq "1")) and ($alg eq "usearch")){  
     
@@ -117,17 +119,17 @@ $manager->wait_all_children;
 
 
 
-%db_all_seq=();
+my %db_all_seq=();
 
 #I build the hash with the sequences
 print "::building the hash with the sequences\n";
 
-@ids_first_genome=();
+my @ids_first_genome=();
 
-$ref=&LibFASTA::read_FASTA("$genomes[0]"," ","1");
-%current_hash=%$ref;
+my $ref=&LibFASTA::read_FASTA("$genomes[0]"," ","1");
+my %current_hash=%$ref;
 
-    foreach $elem (keys(%current_hash)){
+    foreach my $elem (keys(%current_hash)){
         
         if(exists($db_all_seq{$elem})){print "::[ERROR] Hey! There are two or more sequences with the same ID -- ID: $elem !\n";}
 
@@ -139,12 +141,12 @@ $ref=&LibFASTA::read_FASTA("$genomes[0]"," ","1");
 
 
 
-for $genome (@genomes[1..$#genomes]){
+for my $genome (@genomes[1..$#genomes]){
 
-$ref=&LibFASTA::read_FASTA("$genome"," ","1");
-%current_hash=%$ref;
+my $ref=&LibFASTA::read_FASTA("$genome"," ","1");
+my %current_hash=%$ref;
 
-    foreach $elem (keys(%current_hash)){
+    foreach my $elem (keys(%current_hash)){
 
         $db_all_seq{$elem}{"seq"}=$current_hash{$elem};
         $db_all_seq{$elem}{"gen"}=$genome;
@@ -170,24 +172,25 @@ if($new_blasts > 0){
 
 
     #I initialize the hash of the results
-    %results=();
+    my %results=();
 
     #sequences for which I already found a match and therefore can be excluded from further analysis
-    %exclusion_zone=();
+    my %exclusion_zone=();
 
     open(IN,"all_blasted.txt")||die "I cannot open all_blasted.txt";
-    while($line=<IN>){
+    while(my $line=<IN>){
         chomp($line);
         #print $line."\n";
-        @data=split(/\t/,$line);
+        my @data=split(/\t/,$line);
 
-        $query=$data[0];
+        my $query=$data[0];
         $exclusion_zone{$query}=1;
 
-        $genome_q=$db_all_seq{$query}{"gen"};
+       my $genome_q=$db_all_seq{$query}{"gen"};
         #print $genome_q."\n";
         $results{$query}{$genome_q}{$query}=1;
 
+	my $length_query;
 
         if(exists($db_all_seq{$query})){
             $length_query=length($db_all_seq{$query}{"seq"});
@@ -196,8 +199,11 @@ if($new_blasts > 0){
             print "::[ERROR] sequence $query not present in db of the hash %db_all_seq\n";
         }
         
-        $hit=$data[1];
+        my $hit=$data[1];
         
+	my $length_hit;
+	my $genome_id; #it is the genome of the hit
+
         
         if(exists($db_all_seq{$hit})){
             $length_hit=length($db_all_seq{$hit}{"seq"});
@@ -209,10 +215,10 @@ if($new_blasts > 0){
         } 
 
 
-        $identity_ali=$data[2];
+        my $identity_ali=$data[2];
         if($identity_ali < $identity){next;}
 
-        $length_alignment=$data[3];
+        my $length_alignment=$data[3];
         
        # print $query."-".$hit."-"."$identity"."-".$length_alignment."-".($length_query*0.85)."-".($length_hit*0.85)."\n";
 
@@ -243,25 +249,25 @@ if($new_blasts > 0){
 
     open(OUT,">situation_iter1.txt");
     print OUT "#".join("\t",@genomes)."\n";
-    foreach $entry (@ids_first_genome){
+    foreach my $entry (@ids_first_genome){
 
 
-         @arr_to_print=();
+         my@arr_to_print=();
          push(@arr_to_print,$entry);
 
-        foreach $gen (@genomes[1..$#genomes]){
-            $gen_id=$gen;
+        foreach my $gen (@genomes[1..$#genomes]){
+            my $gen_id=$gen;
 
 
 
 
             if(exists($results{$entry}{$gen_id})){
             
-            $ref=$results{$entry}{$gen_id};
-            %hash_ref=%$ref;
+            my $ref=$results{$entry}{$gen_id};
+            my %hash_ref=%$ref;
 
 
-            @hits=sort(keys(%hash_ref));
+            my@hits=sort(keys(%hash_ref));
             push(@arr_to_print,join(",",@hits));
 
             }
@@ -280,11 +286,11 @@ if($new_blasts > 0){
 
 
 
-%new_sequences=();
+my %new_sequences=();
 
 #I write the remaining sequences
 open(OUT,">new_sequences_iter1.faa");
-foreach $seq (keys(%db_all_seq)){
+foreach my $seq (keys(%db_all_seq)){
     
     if(exists($exclusion_zone{$seq})){
         next;
@@ -309,8 +315,7 @@ print "::First iteration finished!\n";
 
 
 #I reinitialize the array of the results
-undef %results;
-%results=();
+my %results=();
 
 
 
@@ -332,9 +337,9 @@ elsif(((!(-e "new_sequences_iter1.faa.pin")) or ($force eq "1")) and ($alg eq "b
 
 # I run the comparisons
 
-$new_blasts_iter2=0;
+my $new_blasts_iter2=0;
 
-for $genome (@genomes){
+for my $genome (@genomes){
 
   if(((!(-e "${genome}_blasted_iter2.txt")) or ($force eq "1"))and ($alg eq "usearch")){  
 
@@ -390,17 +395,19 @@ if($new_blasts_iter2 > 0){
 
 
     open(IN,"all_blasted_iter2.txt")||die "I cannot open all_blasted_iter2.txt";
-    while($line=<IN>){
+    while(my $line=<IN>){
         chomp($line);
         #print $line."\n";
-        @data=split(/\t/,$line);
+        my @data=split(/\t/,$line);
 
-        $query=$data[0];
+        my $query=$data[0];
 
-        $genome_q=$db_all_seq{$query}{"gen"};
+        my $genome_q=$db_all_seq{$query}{"gen"};
         #print $genome_q."\n";
         $results{$query}{$genome_q}{$query}=1;
 
+
+	my $length_query;
 
         if(exists($db_all_seq{$query})){
             $length_query=length($db_all_seq{$query}{"seq"});
@@ -409,10 +416,13 @@ if($new_blasts_iter2 > 0){
             print "::[ERROR] sequence $query not present in db of the hash %db_all_seq\n";
         }
     
-        $hit=$data[1];
+        my $hit=$data[1];
     
       
-    
+  	my $length_hit; 
+  	my $genome_id; 
+
+ 
         if(exists($db_all_seq{$hit})){
             $length_hit=length($db_all_seq{$hit}{"seq"});
             $genome_id=$db_all_seq{$hit}{"gen"};
@@ -421,18 +431,18 @@ if($new_blasts_iter2 > 0){
             print "::[ERROR] sequence $hit not present in db of the hash %db_all_seq\n";
         } 
 
-        $identity_ali=$data[2];
+        my $identity_ali=$data[2];
         if($identity_ali < $identity){next;}
 
 
 
-        $length_alignment=$data[3];
+        my $length_alignment=$data[3];
 
 
         if(($length_alignment >= ($length_query*0.85)) and ($length_alignment >= ($length_hit*0.85)) ){
         
             $results{$query}{$genome_id}{$hit}=1; 
-            $exclusion_zone{$hit}=1;   
+
     
         }
     
@@ -445,28 +455,28 @@ if($new_blasts_iter2 > 0){
     open(OUT,">situation_iter2.txt");
     print OUT "#".join("\t",@genomes)."\n";
 
-    $ref=&LibFASTA::read_FASTA("new_sequences_iter1.faa"," ","1");
-    %new_sequences=%$ref;
+    my $ref=&LibFASTA::read_FASTA("new_sequences_iter1.faa"," ","1");
+    my %new_sequences=%$ref;
     
 
 
-    foreach $entry (sort(keys(%new_sequences))){
+    foreach my $entry (sort(keys(%new_sequences))){
 
 
         #print OUT $entry."\n";
-        @arr_to_print=();
+        my @arr_to_print=();
 
 
-        foreach $gen (@genomes){
-            $gen_id=$gen;
+        foreach my $gen (@genomes){
+            my $gen_id=$gen;
 
 
             if(exists($results{$entry}{$gen_id})){
-            $ref_r=$results{$entry}{$gen_id};
-            %hash_ref=%$ref_r;
+            my $ref_r=$results{$entry}{$gen_id};
+            my %hash_ref=%$ref_r;
 
 
-            @hits=sort(keys(%hash_ref));
+            my @hits=sort(keys(%hash_ref));
             push(@arr_to_print,join(",",@hits));
 
             }
@@ -494,11 +504,11 @@ print "::Second iteration finished!\n";
 $date=`date "+%Y-%m-%d %H:%M:%S"`;
 
 
- $cmd='cp situation_iter1.txt situation_all.txt';
+ my $cmd='cp situation_iter1.txt situation_all.txt';
  system($cmd);
 
 print "::Building the graph of all data\n";
-$cmd="satv_merge-data3.pl -in situation_all.txt -out table_linked4.tsv";
+my $cmd="satv_merge-data3.pl -in situation_all.txt -out table_linked4.tsv";
 system($cmd);
 
 
