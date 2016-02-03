@@ -1,4 +1,4 @@
-#!/usr/bin/perl -I /project/rclevesq/users/lfreschi/tasks/pangenome/saturnv/bin
+#!/usr/bin/perl -I /project/rclevesq/users/lfreschi/tasks/achromo/installation/bin
 
 use Getopt::Long;
 use LibFASTA;
@@ -244,7 +244,7 @@ chomp($line);
     
 
 
-    open(D,">>table_linked3_mod.tsv");
+    #open(D,">>table_linked3_mod.tsv");
     #print D join("\t",@genomes)."\n";
 
     $count=0;
@@ -284,17 +284,17 @@ chomp($line);
 
         }
 
-        print D join("\t",@final_arr)."\n";
+        print OUT_FILE join("\t",@final_arr)."\n";
 
     }
 
-    close(D);
+    #close(D);
 
 
     
 
 
-        exit();
+
 
     }
 
@@ -311,4 +311,3 @@ close(OUT_FILE);
 
 $cmd="rm -rf usearch_untie_knots_paralogs_partial_*";
 system($cmd);
-

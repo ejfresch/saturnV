@@ -4,7 +4,7 @@ use Getopt::Long;
 
 
 
-$base_path="/home/avincent/Desktop/saturnV/bin/database";
+$base_path="/project/rclevesq/users/lfreschi/tasks/achromo/installation/bin/database";
 my $sequences;
 my $line;
 my $line2;

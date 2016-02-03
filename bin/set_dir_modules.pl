@@ -5,7 +5,7 @@ chomp($current_dir);
 $web_dir=$current_dir;
 $web_dir=~s/bin/web/;
 
-@files_to_modify=("satv_pangenome4-fast.pl","satv_pangenome4.pl","satv_pangenome-mosaic.pl","satv_display-fragments-blocks.pl","satv_display-fragments.pl","satv_display-blocks.pl", "satv_cog2.pl","satv_untie-knots-paralogs.pl");
+@files_to_modify=("satv_search-pangenome-lazy.pl","satv_search-pangenome-strict.pl","satv_pangenome-mosaic.pl","satv_display-fragments-blocks.pl","satv_display-fragments.pl","satv_display-blocks.pl", "satv_cog2.pl","satv_untie-knots-paralogs.pl");
 
 foreach $file (@files_to_modify){
     open(IN,"<$file");  

@@ -56,12 +56,12 @@ if(!(exists($avail_algs{$alg}))){
     exit();    
 }
 
-if(!(exists($avail_ann{$ann}))){
+elsif(!(exists($avail_ann{$ann}))){
     print "::[ERROR] I do not know the annotation software you specified\n";
     exit();    
 }
 
-if(!(exists($avail_methods{$method}))){
+elsif(!(exists($avail_methods{$method}))){
     print "::[ERROR] I do not know the method you specified\n";
     exit();    
 }
@@ -161,8 +161,8 @@ print "::3..2..1..and...lift off -- $date";
 mkdir 'prot_files';
 
 
-system("mv *.faa prot_files");
-system("mv *.gff prot_files");
+system("ln *.faa prot_files");
+system("ln *.gff prot_files");
 system("rm *.udb");
 
 

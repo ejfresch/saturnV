@@ -1,9 +1,9 @@
-#!/usr/bin/perl -I /project/rclevesq/users/lfreschi/tasks/pangenome/saturnv/bin
+#!/usr/bin/perl -I /project/rclevesq/users/lfreschi/tasks/achromo/installation/bin
 
 
 
 
-$dir_web_data="/project/rclevesq/users/lfreschi/tasks/pangenome/saturnv/web";
+$dir_web_data="/project/rclevesq/users/lfreschi/tasks/achromo/installation/web";
 
 
 use Getopt::Long;

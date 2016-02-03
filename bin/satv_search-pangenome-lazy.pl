@@ -1,4 +1,4 @@
-#!/usr/bin/perl -I /project/rclevesq/users/lfreschi/tasks/pangenome/saturnv/bin
+#!/usr/bin/perl -I /project/rclevesq/users/lfreschi/tasks/achromo/installation/bin
 
 
 use strict;
@@ -517,5 +517,3 @@ system($cmd);
 
 print "::Analysis completed at $date";
 print "Bye!\n";
-
-

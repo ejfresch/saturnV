@@ -1,4 +1,4 @@
-#!/usr/bin/perl -I /project/rclevesq/users/lfreschi/tasks/pangenome/saturnv/bin
+#!/usr/bin/perl -I /project/rclevesq/users/lfreschi/tasks/achromo/installation/bin
 
 
 
@@ -394,5 +394,4 @@ $date=`date "+%Y-%m-%d %H:%M:%S"`;
 
 print "::Analysis completed at $date";
 print "Bye!\n";
-
 

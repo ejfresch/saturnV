@@ -1,4 +1,4 @@
-#!/usr/bin/perl -I /home/avincent/Desktop/saturnV/bin
+#!/usr/bin/perl -I /project/rclevesq/users/lfreschi/tasks/achromo/installation/bin
 
 use strict;
 use LibFASTA;
@@ -51,12 +51,12 @@ for my $genome (@genomes){
 
 
     
-    if(((!(-e "${genome}.udb"))or ($force eq "1")) and ($alg eq "usearch")){
+    if((((!(-e "${genome}.udb"))or ($force eq "1"))) and ($alg eq "usearch")){
     print "::indexing sequences -- ${genome} -- algorithm: $alg\n";
     `usearch8 -makeudb_usearch $genome -output ${genome}.udb >> log_file 2>&1`;
 
     }
-    elsif(((!(-e "${genome}.pin")) or ($force eq "1")) and ($alg eq "blast")){
+    elsif((((!(-e "${genome}.pin")) or ($force eq "1"))) and ($alg eq "blast")){
     print "::indexing sequences -- ${genome} -- algorithm: $alg\n";
     `makeblastdb -in $genome -dbtype prot > /dev/null`;
     }
@@ -583,5 +583,4 @@ system($cmd);
 
 print "::Analysis completed at $date";
 print "Bye!\n";
-
 

@@ -303,11 +303,11 @@ my @cc=$g->strongly_connected_components();
 
 
 open(OUT,">table_linked3.tsv");
-print OUT join("\t",@genomes)."\n";
+print OUT "#".join("\t",@genomes)."\n";
 
 my $count=0;
 foreach my $c (@cc){
-    my $count++;
+    $count++;
     print "::writing down the strongly connected components of the graph (${count})\n";
 
 
