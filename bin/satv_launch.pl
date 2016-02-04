@@ -31,7 +31,8 @@ my %avail_algs=(
 my %avail_methods=(
     "lazy" => 1,
     "strict" => 1,
-    "strictest" => 1
+    "strictest" => 1,
+    "centroids" =>1
 
 );
 
@@ -137,6 +138,11 @@ print "::3..2..1..and...lift off -- $date";
         system($cmd);
     }
 
+    elsif($method eq "centroids"){
+
+        $cmd="satv_search-pangenome-centroids.pl -g genomes_to_analyze.txt -c $n_cpu -i $identity_orthologs -ip $identity_paralogs -f $force";
+        system($cmd);
+    }
 
 
 
