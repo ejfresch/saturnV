@@ -1,4 +1,4 @@
-#!/usr/bin/perl -I /home/avincent/Desktop/saturnV/bin
+#!/usr/bin/perl
 
 use strict;
 
@@ -6,6 +6,8 @@ use Parallel::ForkManager;
 use Getopt::Long;
 use Graph;
 
+use Memory::Usage;
+my $mu = Memory::Usage->new();
 
 my $genome_list="";
 my $n_cpu=1;
@@ -13,6 +15,7 @@ my $force=0;
 my $identity_orthologs=90;
 my $identity_paralogs=90;
 my $alg="usearch";
+my $file_out="table_linked5_strictest.tsv";
 
 #here are the available algorithms for the search
 my %avail_algs=(
@@ -21,17 +24,20 @@ my %avail_algs=(
 );
 
 
-GetOptions ("g=s" => \$genome_list,"c=s"   => \$n_cpu,"i=s"   => \$identity_orthologs,"ip=s"   => \$identity_paralogs,"f=s"   => \$force,"a=s"=> \$alg) or die("::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity_orthlogs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n[ERROR] launch failed! Please check the parameters!\n");
+GetOptions ("g=s" => \$genome_list,"out=s"   => \$file_out,"c=s"   => \$n_cpu,"i=s"   => \$identity_orthologs,"ip=s"   => \$identity_paralogs,"f=s"   => \$force,"a=s"=> \$alg) or die("::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity_orthlogs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n[ERROR] launch failed! Please check the parameters!\n");
 
 if($genome_list eq ""){
-    print "::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity_orthlogs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n";
+    print "::usage: $0 -g <genomes_list> -out <file_out> -c <n_cpu> -i <perc_identity_orthlogs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n";
     exit();
 }
 
 if(!(exists($avail_algs{$alg}))){
-    print "::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity_orthlogs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n";
+    print "::usage: $0 -g <genomes_list> -out <file_out> -c <n_cpu> -i <perc_identity_orthlogs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n";
     exit();    
 }
+
+
+
 
 
 
@@ -81,6 +87,7 @@ for my $genome (@genomes){
             $id=~s/>//g;
             $db_elements{$id}{"len"}=0;
             $db_elements{$id}{"gen"}=$genome;
+
 
         }
         else{
@@ -150,6 +157,8 @@ open(O2,">dump_data-searches.txt");
 print O2 "#query\thit\tidentity\tlength_ali\tthreshold_query\tthreshold_hit\tdecision\n";
 
 my %results=();
+
+
 open(IN,"<db_complete_search.txt");
 while(my $line=<IN>){
      chomp($line);
@@ -233,10 +242,10 @@ while(my $line=<IN>){
 
 
             }else{            
-
+            
                 $results{$query}{$genome_h}{"hit"}=$hit;
                 $results{$query}{$genome_h}{"id"}=$perc_identity;
-
+                         
             }
         
         }else{print O2 "No\n";}
@@ -291,26 +300,42 @@ while(my $line=<IN>){
 
 }
 
-
 close(IN);
 
 
-print "::perl is determining the strongly connected components of the graph\n";
+foreach my $element (keys(%db_elements)){
+    if(!($g->has_vertex($element))){
+        $g->add_vertex($element);        
+    }    
+}
+
+
+my $date=`date "+%Y-%m-%d %H:%M:%S"`;
+print "::perl is determining the strongly connected components of the graph -- $date";
 my @cc=$g->strongly_connected_components();
 
+$mu->record('mem_conn_comp');
+
+my $ref_mem=$mu->state();
+my @data_mem=@$ref_mem;
+my $ref_data_graph=$data_mem[0];
+my @data_graph=@$ref_data_graph;
+
+print "::I used ".sprintf("%.2f",($data_graph[2]/1024))." Mb (Virtual Memory)\n";
 
 
 
 
-open(OUT,">table_linked3.tsv");
+
+my $date=`date "+%Y-%m-%d %H:%M:%S"`;
+print "::writing down the strongly connected components of the graph (".($#cc+1).") -- $date";
+
+
+open(OUT,">${file_out}");
 print OUT "#".join("\t",@genomes)."\n";
 
-my $count=0;
 foreach my $c (@cc){
-    $count++;
-    print "::writing down the strongly connected components of the graph (${count})\n";
-
-
+    
     my %hash_results=();
     my @current_cc=@$c;
     foreach my $element (@current_cc){
@@ -355,7 +380,7 @@ close(OUT);
 
 
 
-
+my $date=`date "+%Y-%m-%d %H:%M:%S"`;
 print "::Analysis completed at $date";
 print "Bye!\n";
 

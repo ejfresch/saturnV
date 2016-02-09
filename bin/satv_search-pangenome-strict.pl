@@ -12,6 +12,7 @@ my $force=0;
 my $identity_orthologs=90;
 my $identity_paralogs=90;
 my $alg="usearch";
+my $file_out="table_linked5_strict.tsv";
 
 #here are the available algorithms for the search
 my %avail_algs=(
@@ -20,10 +21,10 @@ my %avail_algs=(
 );
 
 
-GetOptions ("g=s" => \$genome_list,"c=s"   => \$n_cpu,"i=s"   => \$identity_orthologs,"ip=s"   => \$identity_paralogs,"f=s"   => \$force,"a=s"=> \$alg) or die("::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity_orthlogs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n[ERROR] launch failed! Please check the parameters!\n");
+GetOptions ("g=s" => \$genome_list,"out=s"   => \$file_out,"c=s"   => \$n_cpu,"i=s"   => \$identity_orthologs,"ip=s"   => \$identity_paralogs,"f=s"   => \$force,"a=s"=> \$alg) or die("::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity_orthlogs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n[ERROR] launch failed! Please check the parameters!\n");
 if($genome_list eq ""){
 
-    print "::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity_orthologs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n";
+    print "::usage: $0 -g <genomes_list> -out <out_file> -c <n_cpu> -i <perc_identity_orthologs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n";
     exit();
 }
 
@@ -64,7 +65,7 @@ for my $genome (@genomes){
 
 
 
-    print "determining the length of the sequences contained in genome $genome\n";
+    print "--determining the length of the sequences contained in genome $genome\n";
 
     my $id;
     open(IN,"<$genome") or die("::I cannot open the file ${genome}\n");
@@ -571,11 +572,13 @@ $date=`date "+%Y-%m-%d %H:%M:%S"`;
 `cat situation_iter2.txt|tail -n+2 >> situation_all.txt`; 
 
 
-my $cmd="satv_merge-data3.pl -in situation_all.txt -out pre_table_linked.tsv";
+
+
+my $cmd="satv_merge-data3.pl -in situation_all.txt -out pre-table_linked5_strict.tsv";
 system($cmd);
 
 
-my $cmd="satv_untie-knots-paralogs.pl -in pre_table_linked.tsv -out table_linked4.tsv";
+my $cmd="satv_untie-knots-paralogs.pl -in pre-table_linked5_strict.tsv -out ${file_out}";
 system($cmd);
 
 

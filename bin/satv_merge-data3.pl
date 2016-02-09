@@ -20,8 +20,8 @@ if(($file_in eq "") or ($file_out eq "")){
 $graph = Graph::Undirected->new;
 
 
-print "::constructing the graph\n";
-$lines_read=0;
+print "::Constructing the graph\n";
+
 
 open(IN,"<${file_in}")or die "::[ERROR] I cannot open the file $file_in\n";
 $comment=<IN>;
@@ -49,8 +49,6 @@ while($line=<IN>){
         $graph->add_vertex($res_path[0]);
     }
 
-    $lines_read++;    
-    print "-- $lines_read lines read\n";
     
 
 
@@ -61,11 +59,11 @@ while($line=<IN>){
 
 close(IN);
 
-print "\n";
-
 
 #print "The graph is $graph\n";
-print "::perl is determining the connected components of the graph\n";
+my $date=`date "+%Y-%m-%d %H:%M:%S"`;
+chomp($date);
+print "::perl is determining the connected components of the graph -- $date\n";
 @cc=$graph->connected_components();
 
 $comment=~s/#//;
@@ -73,14 +71,16 @@ $comment=~s/.faa//g;
 @genomes=split(/\t/,$comment);
 
 
+my $date=`date "+%Y-%m-%d %H:%M:%S"`;
+chomp($date);
+print "::writing down the connected components of the graph (".($#cc+1).") -- ${date}\n";
 
 open(OUT,">${file_out}");
 print OUT $header."\n";
 
-$count=0;
+
 foreach $c (@cc){
-    $count++;
-    print "::writing down the connected components of the graph (${count}/$#cc)\n";
+
 
 
     %hash_results=();

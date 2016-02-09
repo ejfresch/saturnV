@@ -12,6 +12,7 @@ my $n_cpu=1;
 my $identity=90;
 my $force=0;
 my $alg="usearch";
+my $file_out="table_linked5_lazy.tsv";
 
 #here are the available algorithms for the search
 my %avail_algs=(
@@ -20,19 +21,19 @@ my %avail_algs=(
 );
 
 
-GetOptions ("g=s" => \$genome_list,"c=s"   => \$n_cpu,"i=s"   => \$identity,"f=s"   => \$force,"a=s"=> \$alg) or die("::usage: $0 -d <genomes_list> -c <n_cpu> -i <perc_identity> -f <force:[0|1]> -a <algorithm>\n");
+GetOptions ("g=s" => \$genome_list,"out=s"   => \$file_out,"c=s"   => \$n_cpu,"i=s"   => \$identity,"f=s"   => \$force,"a=s"=> \$alg) or die("::usage: $0 -d <genomes_list> -c <n_cpu> -i <perc_identity> -f <force:[0|1]> -a <algorithm>\n");
 
 
 if($genome_list eq ""){
 
-    print "::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity> -f <force:[0|1]> -a <algorithm>\n";
+    print "::usage: $0 -g <genomes_list> -out <out_file> -c <n_cpu> -i <perc_identity> -f <force:[0|1]> -a <algorithm>\n";
     exit();
 }
 
 
 
 if(!(exists($avail_algs{$alg}))){
-    print "::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity> -f <force:[0|1]> -a <algorithm>\n";
+    print "::usage: $0 -g <genomes_list> -out <out_file> -c <n_cpu> -i <perc_identity> -f <force:[0|1]> -a <algorithm>\n";
     exit();    
 }
 
@@ -161,7 +162,7 @@ my %current_hash=%$ref;
 print "::analyzing the usearch output\n";
 
 #now I can read the usearch output and draw some conclusions
-
+print "--new_blasts_iter1:=".$new_blasts."\n";
 
 if($new_blasts > 0){
 
@@ -386,7 +387,7 @@ print "::analyzing the usearch output\n";
 
 #now I can read the blast output and draw some conclusions
 
-print "new_blasts_iter2:=".$new_blasts_iter2."\n";
+print "--new_blasts_iter2:=".$new_blasts_iter2."\n";
 
 if($new_blasts_iter2 > 0){
 
@@ -507,8 +508,12 @@ $date=`date "+%Y-%m-%d %H:%M:%S"`;
  my $cmd='cp situation_iter1.txt situation_all.txt';
  system($cmd);
 
-print "::Building the graph of all data\n";
-my $cmd="satv_merge-data3.pl -in situation_all.txt -out table_linked4.tsv";
+ my $cmd='cat situation_iter2.txt |grep -v  "#" >> situation_all.txt';
+ system($cmd);
+
+
+
+my $cmd="satv_merge-data3.pl -in situation_all.txt -out ${file_out}";
 system($cmd);
 
 

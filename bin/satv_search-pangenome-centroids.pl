@@ -6,12 +6,12 @@ use Getopt::Long;
 $genome_list="";
 $identity_orthologs="90";
 $n_cpu=1;
+$file_out="table_linked5_centroids.tsv";
 
-
-GetOptions ("g=s" => \$genome_list,"c=s"   => \$n_cpu,"i=s"   => \$identity_orthologs,"ip=s"   => \$identity_paralogs,"f=s"   => \$force,"a=s"=> \$alg) or die("::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity_orthlogs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n[ERROR] launch failed! Please check the parameters!\n");
+GetOptions ("g=s" => \$genome_list,"out=s"  => \$file_out,"c=s"   => \$n_cpu,"i=s"   => \$identity_orthologs,"f=s"   => \$force) or die("::usage: $0 -g <genomes_list> -out <file_out> -c <n_cpu> -i <perc_identity_orthlogs> -f <force:[0|1]>\n[ERROR] launch failed! Please check the parameters!\n");
 
 if($genome_list eq ""){
-    print "::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity_orthlogs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n";
+    print "::usage: $0 -g <genomes_list> -out <file_out> -c <n_cpu> -i <perc_identity_orthlogs> -ip <perc_identity_paralogs> -f <force:[0|1]>\n";
     exit();
 }
 
@@ -31,14 +31,14 @@ system($cmd);
 
 print "::generating clusters\n";
 
-$cmd="usearch8 -threads $n_cpu -cluster_fast CONCAT.faa -id $identity_orthologs_usearch -uc table_results_centroids.txt";
+$cmd="usearch8 -threads $n_cpu -cluster_fast CONCAT.faa -id $identity_orthologs_usearch -uc table_results_centroids_usearch.tsv";
 system($cmd);
 
 
-open(OUT,">table_links_centroids.txt");
+open(OUT,">${file_out}");
 
 print OUT "#".join("\t",@genomes)."\n";
-open(IN,"<table_results_centroids.txt");
+open(IN,"<table_results_centroids_usearch.tsv");
 
 %results=();
 

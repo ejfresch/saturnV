@@ -14,7 +14,7 @@ $identity_paralogs=90;
 
 GetOptions ("in=s" => \$input_file,"out=s" => \$out_file,"c=s"   => \$n_cpu,"i=s"   => \$identity_usearch,"ip=s"   => \$identity_paralogs) or die("::usage: $0 -in <input_file> -c <n_cpu> -i <identity_usearch> -ip <identity_paralogs>\n[ERROR] launch failed! Please check the parameters!\n");
 
-if($input_file eq ""){
+if(($input_file eq "") or ($out_file eq "")){
 
     print "::usage: $0 -in <input_file> -c <n_cpu> -i <identity_usearch> -ip <identity_paralogs> -out <out_file>\n";
     exit();
@@ -43,7 +43,7 @@ chomp($line);
 
     if($line=~/,/){
     
-        print ":: analyzing line $count_overall\n";
+        print "::analyzing line $count_overall\n";
         @elements=split(/\t/,$line);
 
         %ids=();
@@ -109,7 +109,7 @@ chomp($line);
       system($cmd);
 
 
-      print ":: performing sequence comparisons with usearch\n";    
+      print "::performing sequence comparisons with usearch\n";    
       #exit();
 
     
@@ -242,7 +242,7 @@ chomp($line);
     @cc=$g->strongly_connected_components();
 
     
-
+    print "::writing down the strongly connected components of the graph (".($#cc+1).")\n";
 
     #open(D,">>table_linked3_mod.tsv");
     #print D join("\t",@genomes)."\n";
@@ -250,7 +250,7 @@ chomp($line);
     $count=0;
     foreach $c (@cc){
         $count++;
-        print "::writing down the strongly connected components of the graph (${count})\n";
+
 
 
         %hash_results=();
