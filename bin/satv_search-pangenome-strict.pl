@@ -4,6 +4,7 @@ use strict;
 use LibFASTA;
 use Parallel::ForkManager;
 use Getopt::Long;
+use Graph;
 
 
 my $genome_list="";
@@ -53,12 +54,12 @@ for my $genome (@genomes){
 
     
     if((((!(-e "${genome}.udb"))or ($force eq "1"))) and ($alg eq "usearch")){
-    print "::indexing sequences -- ${genome} -- algorithm: $alg\n";
+    print "::indexing sequences -- ${genome}\n";
     `usearch8 -makeudb_usearch $genome -output ${genome}.udb >> log_file 2>&1`;
 
     }
     elsif((((!(-e "${genome}.pin")) or ($force eq "1"))) and ($alg eq "blast")){
-    print "::indexing sequences -- ${genome} -- algorithm: $alg\n";
+    print "::indexing sequences -- ${genome}\n";
     `makeblastdb -in $genome -dbtype prot > /dev/null`;
     }
 
@@ -80,6 +81,7 @@ for my $genome (@genomes){
             $db_elements{$id}{"len"}=0;
             $db_elements{$id}{"gen"}=$genome;
             $db_elements{$id}{"seq"}="";
+            $db_elements{$id}{"seen"}=0;
             
             if($genome eq $first_genome){
                 push(@ids_first_genome,$id);
@@ -122,7 +124,7 @@ for my $genome (@genomes[0..$#genomes]){
   
   $manager->start and next;
 
-    print "::performing usearch searches -- ${first_genome} vs ${genome}\n";
+    print "::performing $alg searches -- ${first_genome} vs ${genome}\n";
 
     if($alg eq "usearch"){
     `usearch8 -usearch_local $first_genome -threads 1 -db ${genome}.udb -id $identity -blast6out ${genome}_blasted.txt >> log_file 2>&1`;
@@ -162,6 +164,8 @@ my %results=();
 
 #sequences for which I already found a match and therefore can be excluded from further analysis
 my %exclusion_zone=();
+
+print "--new_blasts:=".$new_blasts."\n";
 
 if($new_blasts > 0){
 
@@ -287,6 +291,8 @@ if($new_blasts > 0){
     foreach my $entry (@ids_first_genome){
 
 
+        $db_elements{$entry}{"seen"}=1;
+
          my @arr_to_print=();
          push(@arr_to_print,$entry);
 
@@ -298,7 +304,7 @@ if($new_blasts > 0){
 
             if(exists($results{$entry}{$gen_id}{"hit"})){
             
-   
+            $db_elements{$results{$entry}{$gen_id}{"hit"}}{"seen"}=1;
             push(@arr_to_print,$results{$entry}{$gen_id}{"hit"});
 
             }
@@ -413,7 +419,7 @@ print "::analyzing the usearch output\n";
 
 #now I can read the blast output and draw some conclusions
 
-print "new_blasts_iter2:=".$new_blasts_iter2."\n";
+print "--new_blasts_iter2:=".$new_blasts_iter2."\n";
 
 if($new_blasts_iter2 > 0){
 
@@ -520,7 +526,8 @@ if($new_blasts_iter2 > 0){
 
 
     foreach my $entry (sort(keys(%new_sequences))){
-
+        
+        $db_elements{$entry}{"seen"}=1;
 
         #print OUT $entry."\n";
         my @arr_to_print=();
@@ -533,6 +540,8 @@ if($new_blasts_iter2 > 0){
             if(exists($results{$entry}{$gen_id}{"hit"})){
 
                 my $target=$results{$entry}{$gen_id}{"hit"};
+
+                $db_elements{$target}{"seen"}=1;
     
                 if(exists($exclusion_zone{$target})){                        
                     push(@arr_to_print,"-");
@@ -565,7 +574,8 @@ else{
 
 
 print "::Second iteration finished!\n";
-$date=`date "+%Y-%m-%d %H:%M:%S"`;
+
+
 
 
 `cat situation_iter1.txt > situation_all.txt`;
@@ -574,8 +584,110 @@ $date=`date "+%Y-%m-%d %H:%M:%S"`;
 
 
 
-my $cmd="satv_merge-data3.pl -in situation_all.txt -out pre-table_linked5_strict.tsv";
-system($cmd);
+
+my $graph = Graph::Undirected->new;
+
+
+print "::Constructing the graph\n";
+
+open(IN,"<situation_all.txt");
+my $comment=<IN>;
+chomp($comment);
+my $header=$comment;
+while(my $line=<IN>){
+    chomp($line);
+    if($line eq ""){next;}
+    my @data=split(/\t/,$line); 
+    my %hash_line=();
+    foreach my $el (@data){
+        my @el_fragmented=split(/,/,$el);
+        foreach my $fragment(@el_fragmented){
+            if($fragment ne "-"){        
+            $hash_line{$fragment}=1;
+            } 
+        }   
+    }
+    my @res_path=keys(%hash_line);
+
+    if($#res_path>0){
+        $graph->add_path(keys(%hash_line));
+    }
+    if($#res_path eq 0){
+        $graph->add_vertex($res_path[0]);
+    }
+
+
+}
+
+
+
+close(IN);
+
+#now I add all other nodes
+
+foreach my $element (keys(%db_elements)){
+    if(!($graph->has_vertex($element))){
+        $graph->add_vertex($element);        
+    }    
+}
+
+
+#print "The graph is $graph\n";
+my $date=`date "+%Y-%m-%d %H:%M:%S"`;
+chomp($date);
+print "::perl is determining the connected components of the graph -- $date\n";
+my @cc=$graph->connected_components();
+
+$comment=~s/#//;
+$comment=~s/.faa//g;
+@genomes=split(/\t/,$comment);
+
+
+my $date=`date "+%Y-%m-%d %H:%M:%S"`;
+chomp($date);
+print "::writing down the connected components of the graph (".($#cc+1).") -- ${date}\n";
+
+open(OUT,">pre-table_linked5_strict.tsv");
+print OUT $header."\n";
+
+
+foreach my $c (@cc){
+
+    my %hash_results=();
+    my @current_cc=@$c;
+    foreach my $element (@current_cc){
+
+        if($element eq "-"){next;}
+        #print $element."\n";
+        my @explode=split(/_/,$element);
+        #print $explode[0]."\n";
+        $hash_results{$explode[0]}{$element}=1;        
+
+
+     
+    }
+
+    my @final_arr=();    
+    
+    foreach my $genome (@genomes){
+    #print $genome."\n";
+    if(exists($hash_results{$genome})){
+       
+        my $ref=$hash_results{$genome};
+
+        my %arr=%$ref;
+        push(@final_arr,join(",",sort(keys(%arr))));
+    }
+    else{push(@final_arr,"-");}
+
+    }
+
+    print OUT join("\t",@final_arr)."\n";
+
+}
+
+close(OUT);
+
 
 
 my $cmd="satv_untie-knots-paralogs.pl -in pre-table_linked5_strict.tsv -out ${file_out}";
@@ -583,7 +695,7 @@ system($cmd);
 
 
 
-
+$date=`date "+%Y-%m-%d %H:%M:%S"`;
 print "::Analysis completed at $date";
 print "Bye!\n";
 
