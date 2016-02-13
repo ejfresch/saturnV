@@ -16,6 +16,7 @@ my $identity_orthologs=90;
 my $identity_paralogs=90;
 my $alg="usearch";
 my $file_out="table_linked5_strictest.tsv";
+my $sim=0;
 
 #here are the available algorithms for the search
 my %avail_algs=(
@@ -24,15 +25,15 @@ my %avail_algs=(
 );
 
 
-GetOptions ("g=s" => \$genome_list,"out=s"   => \$file_out,"c=s"   => \$n_cpu,"i=s"   => \$identity_orthologs,"ip=s"   => \$identity_paralogs,"f=s"   => \$force,"a=s"=> \$alg) or die("::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity_orthlogs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n[ERROR] launch failed! Please check the parameters!\n");
+GetOptions ("g=s" => \$genome_list,"out=s"   => \$file_out,"c=s"   => \$n_cpu,"i=s"   => \$identity_orthologs,"ip=s"   => \$identity_paralogs,"f=s"   => \$force,"a=s"=> \$alg ,"sim=s"=> \$sim) or die("::usage: $0 -g <genomes_list> -c <n_cpu> -i <perc_identity_orthlogs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n[ERROR] launch failed! Please check the parameters!\n");
 
 if($genome_list eq ""){
-    print "::usage: $0 -g <genomes_list> -out <file_out> -c <n_cpu> -i <perc_identity_orthlogs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n";
+    print "::usage: $0 -g <genomes_list> -out <file_out> -c <n_cpu> -i <perc_identity_orthlogs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm -sim <similarity:[0|1]>>\n";
     exit();
 }
 
 if(!(exists($avail_algs{$alg}))){
-    print "::usage: $0 -g <genomes_list> -out <file_out> -c <n_cpu> -i <perc_identity_orthlogs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm>\n";
+    print "::usage: $0 -g <genomes_list> -out <file_out> -c <n_cpu> -i <perc_identity_orthlogs> -ip <perc_identity_paralogs> -f <force:[0|1]> -a <algorithm> -sim <similarity:[0|1]\n";
     exit();    
 }
 
@@ -129,7 +130,7 @@ for(my $i=0;$i<=$#genomes;$i++){
         }
         elsif($alg eq "blast"){
               print "::performing $alg searches -- $genomes[$i] vs $genomes[$j]\n";
-             `blastp -query $genomes[$i] -db $genomes[$j] -num_threads 1 -out $genomes[$i]_vs_$genomes[$j]_complete-search.txt -seg no -outfmt 6`;
+             `blastp -query $genomes[$i] -db $genomes[$j] -num_threads 1 -out $genomes[$i]_vs_$genomes[$j]_complete-search.txt -seg no -outfmt '6 qseqid sseqid pident length ppos'`;
 
         }
 
@@ -199,13 +200,17 @@ while(my $line=<IN>){
         } 
 
 
-
-        $perc_identity=$data[2];
+	if($sim eq "0"){
+        $perc_identity=$data[2]; # identity
+	}
+	elsif($sim eq "1"){
+	$perc_identity=$data[4]; # similarity
+	}
 
         #useful for blast
         if($perc_identity < $identity_orthologs){next;}
         
-        $length_alignment=$data[3];
+        $length_alignment=$data[3]; # alignment
 
 
         print O2 $query."\t".$hit."\t".$perc_identity."\t".$length_alignment."\t".($length_query*0.85)."\t".($length_hit*0.85)."\t";
