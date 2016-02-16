@@ -21,6 +21,7 @@ my $bootstrap_num=100;
 my $bootstrap=1;
 my $knife="";
 my $force=0;
+my $sim=0;
 
 #here are the available algorithms for the search
 my %avail_algs=(
@@ -44,7 +45,7 @@ my %avail_ann=(
 
 
 
-GetOptions ("d=s" => \$dir_genomes,"c=s"   => \$n_cpu, "ann=s"   => \$ann,"m=s"   => \$method,"a=s"   => \$alg,"k=s"   => \$knife, "r=s"   => \$raxml, "i=s"   => \$identity_orthologs,"ip=s"   => \$identity_paralogs, "B=s"   => \$bootstrap_num,"f=s" => $force) or die("::usage: $0 -d <dir_genomes> -c <n_cpu> -ann <annotation_software> -m <comparison_method> -a <algorithm> -f <force:[0|1]> -k <expression> -r <raxml:[0|1]> -i <perc_identity> -ip <perc_identity_paralogs> -B <bootstraps>\n[ERROR] launch failed! Please check the parameters!\n");
+GetOptions ("d=s" => \$dir_genomes,"c=s"   => \$n_cpu, "ann=s"   => \$ann,"m=s"   => \$method,"a=s"   => \$alg,"k=s"   => \$knife, "r=s"   => \$raxml, "i=s"   => \$identity_orthologs,"ip=s"   => \$identity_paralogs, "B=s"   => \$bootstrap_num,"f=s" => $force, "sim=s"=> \$sim) or die("::usage: $0 -d <dir_genomes> -c <n_cpu> -ann <annotation_software> -m <comparison_method> -a <algorithm> -f <force:[0|1]> -k <expression> -r <raxml:[0|1]> -i <perc_identity> -ip <perc_identity_paralogs> -B <bootstraps>\n[ERROR] launch failed! Please check the parameters!\n");
 
 if($dir_genomes eq ""){
     print "::usage: $0 -d <dir_genomes> -c <n_cpu> -ann <annotation_software> -m <comparison_method> -a <algorithm> -f <force:[0|1]> -k <expression> -r <raxml:[0|1]> -i <perc_identity> -ip <perc_identity_paralogs> -B <bootstraps>\n[ERROR] launch failed! Please check the parameters!\n";
@@ -124,23 +125,23 @@ print "::3..2..1..and...lift off -- $date";
     #determining the pangenome --second stage
     if($method eq "lazy"){
 
-        $cmd="satv_search-pangenome-lazy.pl -g genomes_to_analyze.txt -c $n_cpu -i $identity_orthologs -f $force -a $alg";
+        $cmd="satv_search-pangenome-lazy.pl -g genomes_to_analyze.txt -c $n_cpu -i $identity_orthologs -f $force -a $alg -sim $sim";
         system($cmd);
     }
     elsif($method eq "strict"){
 
-        $cmd="satv_search-pangenome-strict.pl -g genomes_to_analyze.txt -c $n_cpu -i $identity_orthologs -ip $identity_paralogs -f $force -a $alg";
+        $cmd="satv_search-pangenome-strict.pl -g genomes_to_analyze.txt -c $n_cpu -i $identity_orthologs -ip $identity_paralogs -f $force -a $alg -sim $sim";
         system($cmd);
     }
     elsif($method eq "strictest"){
 
-        $cmd="satv_search-pangenome-strictest.pl -g genomes_to_analyze.txt -c $n_cpu -i $identity_orthologs -ip $identity_paralogs -f $force -a $alg";
+        $cmd="satv_search-pangenome-strictest.pl -g genomes_to_analyze.txt -c $n_cpu -i $identity_orthologs -ip $identity_paralogs -f $force -a $alg -sim $sim";
         system($cmd);
     }
 
     elsif($method eq "centroids"){
 
-        $cmd="satv_search-pangenome-centroids.pl -g genomes_to_analyze.txt -c $n_cpu -i $identity_orthologs -ip $identity_paralogs -f $force";
+        $cmd="satv_search-pangenome-centroids.pl -g genomes_to_analyze.txt -c $n_cpu -i $identity_orthologs -f $force";
         system($cmd);
     }
 
@@ -150,7 +151,21 @@ print "::3..2..1..and...lift off -- $date";
 
 	# if the user want a phylogeny generated from the binary matrix
     if($raxml eq "1"){
-        system("satv_generate-binary-matrix.pl table_linked3.tsv");
+	if (-e 'table_linked5_lazy.tsv')
+	{
+        system("satv_generate-binary-matrix.pl -tab table_linked5_lazy.tsv -out binary_matrix.tsv");
+	}
+
+	if (-e 'table_linked5_strict.tsv')
+	{
+        system("satv_generate-binary-matrix.pl -tab table_linked5_strict.tsv -out binary_matrix.tsv");
+	}
+
+	if (-e 'table_linked5_strictest.tsv')
+	{
+        system("satv_generate-binary-matrix.pl -tab table_linked5_strictest.tsv -out binary_matrix.tsv");
+	}
+
         $cmd="satv_raxml-driver.sh $n_cpu $bootstrap_num";
         system($cmd);
 

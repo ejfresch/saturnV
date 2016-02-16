@@ -1,4 +1,4 @@
-#!/usr/bin/perl -I /project/rclevesq/users/lfreschi/tasks/achromo/installation/bin
+#!/usr/bin/perl -I /home/avincent/Desktop/saturnV/bin
 
 
 use strict;
@@ -13,6 +13,8 @@ my $identity=90;
 my $force=0;
 my $alg="usearch";
 my $file_out="table_linked5_lazy.tsv";
+my $sim=0;
+my $identity_ali;
 
 #here are the available algorithms for the search
 my %avail_algs=(
@@ -21,19 +23,19 @@ my %avail_algs=(
 );
 
 
-GetOptions ("g=s" => \$genome_list,"out=s"   => \$file_out,"c=s"   => \$n_cpu,"i=s"   => \$identity,"f=s"   => \$force,"a=s"=> \$alg) or die("::usage: $0 -d <genomes_list> -c <n_cpu> -i <perc_identity> -f <force:[0|1]> -a <algorithm>\n");
+GetOptions ("g=s" => \$genome_list,"out=s"   => \$file_out,"c=s"   => \$n_cpu,"i=s"   => \$identity,"f=s"   => \$force,"a=s"=> \$alg, "sim=s"=> \$sim) or die("::usage: $0 -d <genomes_list> -c <n_cpu> -i <perc_identity> -f <force:[0|1]> -a <algorithm>\n");
 
 
 if($genome_list eq ""){
 
-    print "::usage: $0 -g <genomes_list> -out <out_file> -c <n_cpu> -i <perc_identity> -f <force:[0|1]> -a <algorithm>\n";
+    print "::usage: $0 -g <genomes_list> -out <out_file> -c <n_cpu> -i <perc_identity> -f <force:[0|1]> -a <algorithm> -sim <similarity:[0|1]\n";
     exit();
 }
 
 
 
 if(!(exists($avail_algs{$alg}))){
-    print "::usage: $0 -g <genomes_list> -out <out_file> -c <n_cpu> -i <perc_identity> -f <force:[0|1]> -a <algorithm>\n";
+    print "::usage: $0 -g <genomes_list> -out <out_file> -c <n_cpu> -i <perc_identity> -f <force:[0|1]> -a <algorithm> -sim <similarity:[0|1]\n";
     exit();    
 }
 
@@ -88,7 +90,7 @@ for my $genome (@genomes[0..$#genomes]){
    $new_blasts++;  
   
   $manager->start and next;
-    print "::performing usearch searches -- ${first_genome} vs ${genome}\n";
+    print "::performing $alg searches -- ${first_genome} vs ${genome}\n";
     `usearch8 -usearch_local $first_genome -threads 1 -db ${genome}.udb -id $identity_usearch -blast6out ${genome}_blasted.txt >> log_file 2>&1`;
 
   $manager->finish;
@@ -101,8 +103,8 @@ for my $genome (@genomes[0..$#genomes]){
    $new_blasts++;  
   
   $manager->start and next;
-    print "::performing usearch searches -- ${first_genome} vs ${genome}\n";
-    `blastp -query $first_genome -db $genome -num_threads 1 -out ${genome}_blasted.txt -seg no -outfmt 6`;
+    print "::performing $alg searches -- ${first_genome} vs ${genome}\n";
+    `blastp -query $first_genome -db $genome -num_threads 1 -out ${genome}_blasted.txt -seg no -outfmt '6 qseqid sseqid pident length ppos'`;
 
   $manager->finish;
 
@@ -216,7 +218,13 @@ if($new_blasts > 0){
         } 
 
 
-        my $identity_ali=$data[2];
+                             	if($sim eq "0"){
+        $identity_ali=$data[2]; # identity
+	}
+	elsif($sim eq "1"){
+	$identity_ali=$data[4]; # similarity
+	}
+
         if($identity_ali < $identity){next;}
 
         my $length_alignment=$data[3];
@@ -346,7 +354,7 @@ for my $genome (@genomes){
 
   $new_blasts_iter2++;
   $manager->start and next;
-    print "::performing usearch searches -- new_sequences_iter1 vs ${genome}\n";
+    print "::performing $alg searches -- new_sequences_iter1 vs ${genome}\n";
 
     `usearch8 -usearch_local new_sequences_iter1.faa -threads 1 -db ${genome}.udb -id $identity_usearch -blast6out ${genome}_blasted_iter2.txt >> log_file 2>&1`;
 
@@ -361,9 +369,9 @@ for my $genome (@genomes){
 
   $new_blasts_iter2++;
   $manager->start and next;
-    print "::performing usearch searches -- new_sequences_iter1 vs ${genome}\n";
+    print "::performing $alg searches -- new_sequences_iter1 vs ${genome}\n";
 
-    `blastp -query new_sequences_iter1.faa -db $genome -num_threads 1 -out ${genome}_blasted_iter2.txt -seg no -outfmt 6`;
+    `blastp -query new_sequences_iter1.faa -db $genome -num_threads 1 -out ${genome}_blasted_iter2.txt -seg no -outfmt '6 qseqid sseqid pident length ppos'`;
 
  
 
@@ -432,7 +440,13 @@ if($new_blasts_iter2 > 0){
             print "::[ERROR] sequence $hit not present in db of the hash %db_all_seq\n";
         } 
 
-        my $identity_ali=$data[2];
+                       	if($sim eq "0"){
+        $identity_ali=$data[2]; # identity
+	}
+	elsif($sim eq "1"){
+	$identity_ali=$data[4]; # similarity
+	}
+
         if($identity_ali < $identity){next;}
 
 
