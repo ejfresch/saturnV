@@ -41,6 +41,14 @@ if(!(exists($avail_algs{$alg}))){
 
 
 
+if(($alg ne "blast")and ($sim eq "1")){
+  print "--you cannot use the sim option with the usearch algorithm!\n";
+    exit();
+
+}
+
+
+
 my $identity_usearch=$identity/100;
 
 
