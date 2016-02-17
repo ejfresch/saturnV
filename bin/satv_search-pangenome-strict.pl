@@ -1,4 +1,4 @@
-#!/usr/bin/perl -I /home/avincent/Desktop/saturnV/bin
+#!/usr/bin/perl -I /home/antony/Desktop/SaturnV/bin
 
 use strict;
 use LibFASTA;
@@ -87,7 +87,9 @@ for my $genome (@genomes){
         
         if($line eq ""){next;}
         elsif($line=~/^>/){
-            $id=$line;
+		
+	    my @explode_id=split(/ /,$line);		
+            $id=$explode_id[0];
             $id=~s/>//g;
             $db_elements{$id}{"len"}=0;
             $db_elements{$id}{"gen"}=$genome;
@@ -165,7 +167,7 @@ for my $genome (@genomes[0..$#genomes]){
 $manager->wait_all_children;
 
 
-print "::analyzing the usearch output\n";
+print "::analyzing the $alg output\n";
 
 #now I can read the usearch output and draw some conclusions
 
@@ -205,7 +207,7 @@ if($new_blasts > 0){
             $length_query=$db_elements{$query}{"len"};
         }
         else{
-            print "::[ERROR] sequence $query not present in db of the hash %db_all_seq\n";
+            print "::[ERROR] sequence $query (QUERY) not present in db of the hash %db_elements\n";
         }
         
         my $hit=$data[1];
@@ -222,7 +224,7 @@ if($new_blasts > 0){
             
         }
         else{
-            print "::[ERROR] sequence $hit not present in db of the hash %db_all_seq\n";
+            print "::[ERROR] sequence $hit (HIT) not present in db of the hash %db_elements\n";
         } 
 
 
@@ -431,7 +433,7 @@ my $cmd="usearch8 -usearch_local new_sequences_iter1.faa -threads 1 -db ${genome
 $manager->wait_all_children;
 
 
-print "::analyzing the usearch output\n";
+print "::analyzing the $alg output\n";
 
 #now I can read the blast output and draw some conclusions
 
@@ -719,4 +721,3 @@ system($cmd);
 $date=`date "+%Y-%m-%d %H:%M:%S"`;
 print "::Analysis completed at $date";
 print "Bye!\n";
-

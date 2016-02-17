@@ -6,8 +6,8 @@ use Parallel::ForkManager;
 use Getopt::Long;
 use Graph;
 
-use Memory::Usage;
-my $mu = Memory::Usage->new();
+#use Memory::Usage;
+#my $mu = Memory::Usage->new();
 
 my $genome_list="";
 my $n_cpu=1;
@@ -325,14 +325,14 @@ my $date=`date "+%Y-%m-%d %H:%M:%S"`;
 print "::perl is determining the strongly connected components of the graph -- $date";
 my @cc=$g->strongly_connected_components();
 
-$mu->record('mem_conn_comp');
+#$mu->record('mem_conn_comp');
 
-my $ref_mem=$mu->state();
-my @data_mem=@$ref_mem;
-my $ref_data_graph=$data_mem[0];
-my @data_graph=@$ref_data_graph;
+#my $ref_mem=$mu->state();
+#my @data_mem=@$ref_mem;
+#my $ref_data_graph=$data_mem[0];
+#my @data_graph=@$ref_data_graph;
 
-print "::I used ".sprintf("%.2f",($data_graph[2]/1024))." Mb (Virtual Memory)\n";
+#print "::I used ".sprintf("%.2f",($data_graph[2]/1024))." Mb (Virtual Memory)\n";
 
 
 
