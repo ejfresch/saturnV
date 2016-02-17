@@ -1,16 +1,66 @@
-#!/usr/bin/perl -I /project/rclevesq/users/lfreschi/tasks/achromo/installation/bin
+#!/usr/bin/perl -I /home/avincent/Desktop/saturnV/bin
 
 use Getopt::Long;
 use LibFASTA;
 use Graph;
+use strict;
+use Parallel::ForkManager;
 
-$input_file="";
-$out_file="";
-$n_cpu=1;
-$identity_usearch=90;
-$identity_paralogs=90;
-
-
+my $input_file="";
+my $out_file="";
+my $n_cpu=1;
+my $identity_usearch=90;
+my $identity_paralogs=90;
+my $line;
+my @genomes;
+my $count_overall;
+my @elements;
+my %ids;
+my $i;
+my $el;
+my $id;
+my @explode_id;
+my $current_genome;
+my %genomes_to_scan;
+my %db_elements;
+my $key;
+my $ref;
+my $r2;
+my %seq_ids;
+my $s;
+my $current_seq;
+my %current_hash;
+my $q;
+my $cmd;
+my %results;
+my $line_res;
+my @data;
+my $query;
+my $hit;
+my $genome_q;
+my $genome_h;
+my $length_hit;
+my $length_alignment;
+my $length_query;
+my $perc_identity;
+my $genome;
+my %hash_results;
+my %arr;
+my @final_arr;
+my @all;
+my $prev_hit;
+my $prev_hit_id;
+my %hash;
+my $k;
+my $line_g;
+my @el_fragmented;
+my @cc;
+my $count;
+my $c;
+my @current_cc;
+my $element;
+my @explode;
+my $manager;
 
 GetOptions ("in=s" => \$input_file,"out=s" => \$out_file,"c=s"   => \$n_cpu,"i=s"   => \$identity_usearch,"ip=s"   => \$identity_paralogs) or die("::usage: $0 -in <input_file> -c <n_cpu> -i <identity_usearch> -ip <identity_paralogs>\n[ERROR] launch failed! Please check the parameters!\n");
 
@@ -20,13 +70,12 @@ if(($input_file eq "") or ($out_file eq "")){
     exit();
 }
 
-
+$manager = new Parallel::ForkManager($n_cpu);
 $identity_usearch=$identity_usearch/100;
 
 
 open(IN_FILE,"<$input_file");
 open(OUT_FILE,">$out_file");
-
 $line=<IN_FILE>;
 chomp($line);
 print OUT_FILE $line."\n";
@@ -36,8 +85,9 @@ $line=~s/#//;
 $count_overall=0;
 
 while($line=<IN_FILE>){
+
 chomp($line);
-    
+
     $count_overall++;
 
 
@@ -116,25 +166,27 @@ chomp($line);
       $cmd="usearch8 -makeudb_usearch fasta_subject.faa -output fasta_subject.faa.udb >> log_file 2>&1";
       system($cmd);
 
-      $cmd="usearch8 -usearch_local fasta_query.faa -threads 1 -db fasta_subject.faa.udb -id $identity_usearch -blast6out usearch_untie_knots_paralogs_partial_results.txt >> log_file 2>&1";
+      $cmd="usearch8 -usearch_local fasta_query.faa -threads 1 -db fasta_subject.faa.udb -id $identity_usearch -maxaccepts 0 -maxrejects 0 -blast6out usearch_untie_knots_paralogs_partial_results.txt >> log_file 2>&1";
+	#print $cmd."\n";
       system($cmd);
-    
+
 
     %results=();
 
     open(SCH,"<usearch_untie_knots_paralogs_partial_results.txt");
     while($line_res=<SCH>){
         chomp($line_res);
-        
+
         @data=split(/\t/,$line_res);
     
         $query=$data[0];
 
         
         $hit=$data[1];
-
-        if($query eq $hit){next;}
-    
+	 #print "".$line_res."\n";
+        if($query eq $hit){#print "IF--".$line_res."\n";
+	next;}
+            #print "PASS--".$line_res."\n";
         if(exists($db_elements{$query})){
             $length_query=$db_elements{$query}{"len"};
             $genome_q=$db_elements{$query}{"gen"};
@@ -149,11 +201,13 @@ chomp($line);
 
         $perc_identity=$data[2];
         $length_alignment=$data[3];
-        
+     	#print $query."\t".$hit."\t".$perc_identity."\t".$length_alignment."\t".($length_query*0.85)."\t".($length_hit*0.85)."\n";   
        # print $query."-".$hit."-"."$identity"."-".$length_alignment."-".($length_query*0.85)."-".($length_hit*0.85)."\n";
 
         if(($length_alignment >= ($length_query*0.85)) and ($length_alignment >= ($length_hit*0.85)) ){
-            
+           
+		#print $query."\t".$hit."\t".$perc_identity."\t".$length_alignment."\t".($length_query*0.85)."\t".($length_hit*0.85)."\n";
+ 
 
             if($genome_q eq $genome_h){
                 if($perc_identity < $identity_paralogs){next;}
@@ -200,6 +254,7 @@ chomp($line);
     open(FTR,">usearch_untie_knots_paralogs_db.txt");
     foreach $q (keys(%results)){
 
+	if(!(exists($results{$q}))){next;}
         $ref=$results{$q};
 
         %hash=%$ref;
@@ -309,5 +364,5 @@ chomp($line);
 close(IN_FILE);
 close(OUT_FILE);
 
-$cmd="rm -rf usearch_untie_knots_paralogs_partial_*";
-system($cmd);
+#$cmd="rm -rf usearch_untie_knots_paralogs_partial_*";
+#system($cmd);
