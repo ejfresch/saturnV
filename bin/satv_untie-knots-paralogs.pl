@@ -1,4 +1,4 @@
-#!/usr/bin/perl -I /home/avincent/Desktop/saturnV/bin
+#!/usr/bin/perl 
 
 use Getopt::Long;
 use strict;
@@ -33,7 +33,7 @@ print OUT_FILE $line."\n";
 $line=~s/#//;
 my @genomes=split(/\t/,$line);
 
-my $count_overall=0;
+my $count_overall=1;
 
 while($line=<IN_FILE>){
 
@@ -47,8 +47,9 @@ chomp($line);
 
         $manager->start and next;
 
-
-        my $cmd="satv_resove-line.pl -g $genome_list -out $out_file -id $count_overall -i $identity_orthologs -ip $identity_paralogs -line \"$line\"";
+	    $line=~s/\t/&/g;	
+    	print $line."\n";
+        my $cmd="satv_resolve-line.pl -g $genome_list -out $out_file -id $count_overall -i $identity_orthologs -ip $identity_paralogs -line \"$line\"";
         system($cmd);
 
 
@@ -65,9 +66,14 @@ chomp($line);
 
 }
 
+$manager->wait_all_children;
+
+
 close(IN_FILE);
 close(OUT_FILE);
 
+print "::merging results\n";
 
-$manager->wait_all_children;
+my $cmd="cat usearch_untie_knots_paralogs_table_* >> $out_file";
+system($cmd);
 

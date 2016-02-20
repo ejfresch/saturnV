@@ -713,7 +713,7 @@ close(OUT);
 
 
 
-my $cmd="satv_untie-knots-paralogs.pl -in pre-table_linked5_strict.tsv -out ${file_out}";
+my $cmd="satv_untie-knots-paralogs.pl -g genomes_to_analyze.txt -c $n_cpu -i $identity_orthologs -ip $identity_paralogs -in pre-table_linked5_strict.tsv -out ${file_out}";
 system($cmd);
 
 

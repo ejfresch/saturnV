@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -I /home/lfreschi/tasks/achromo/installation/bin
   
 use Getopt::Long;
 use LibFASTA;
@@ -29,6 +29,8 @@ chomp(@genomes);
 
 $identity_orthologs=$identity_orthologs/100;
 
+
+$line=~s/&/\t/g;
 
 print "::analyzing line $id_line\n";
 my @elements=split(/\t/,$line);
@@ -185,7 +187,7 @@ close(SCH);
 
 
 #I write all data
-open(FTR,">usearch_untie_knots_paralogs_db.txt");
+open(FTR,">usearch_untie_knots_paralogs_db_${id_line}.txt");
 foreach my $q (keys(%results)){
 	if(!(exists($results{$q}))){next;}
     my $ref=$results{$q};
@@ -202,7 +204,7 @@ close(FTR);
 
 #I create the graph
 my $g = Graph->new;
-open(FTR,"<usearch_untie_knots_paralogs_db.txt");
+open(FTR,"<usearch_untie_knots_paralogs_db_${id_line}.txt");
 while(my $line_g=<FTR>){
 	chomp($line_g);
     if($line_g eq ""){next;}
@@ -212,6 +214,13 @@ while(my $line_g=<FTR>){
 }
 close(FTR);
 
+foreach my $element (keys(%db_elements)){
+    if(!($g->has_vertex($element))){
+        $g->add_vertex($element);        
+    }    
+}
+
+
 print "::perl is determining the strongly connected components of the graph\n";
 my @cc=$g->strongly_connected_components();
 
@@ -220,8 +229,7 @@ print "::writing down the strongly connected components of the graph (".($#cc+1)
 #open(D,">>table_linked3_mod.tsv");
 #print D join("\t",@genomes)."\n";
 
-
-open(OUT_FILE,">>$out_file");
+open(OUT_FILE,">usearch_untie_knots_paralogs_table_${id_line}.txt");
 
 my $count=0;
 foreach my $c (@cc){
@@ -250,11 +258,12 @@ foreach my $c (@cc){
         }
         else{push(@final_arr,"-");}
 
-        }
-
+    }
+	    #print ${id_line}.">>".join("\t",@final_arr)."\n";
         print OUT_FILE join("\t",@final_arr)."\n";
 
-    }
+}
+
 
 
 close(OUT_FILE);
