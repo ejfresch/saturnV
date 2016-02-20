@@ -48,7 +48,7 @@ chomp($line);
         $manager->start and next;
 
 	    $line=~s/\t/&/g;	
-    	print $line."\n";
+    	#print $line."\n";
         my $cmd="satv_resolve-line.pl -g $genome_list -out $out_file -id $count_overall -i $identity_orthologs -ip $identity_paralogs -line \"$line\"";
         system($cmd);
 

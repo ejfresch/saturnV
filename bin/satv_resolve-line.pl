@@ -96,7 +96,7 @@ close(SEQ);
 my $cmd="cp fasta_query_${id_line}.faa fasta_subject_${id_line}.faa";
 system($cmd);
 
-print "::performing sequence comparisons with usearch\n";    
+print "::performing sequence comparisons with usearch (id: ${id_line})\n";    
     
 my $cmd="usearch8 -makeudb_usearch fasta_subject_${id_line}.faa -output fasta_subject_${id_line}.faa.udb >> log_file 2>&1";
 system($cmd);
@@ -221,10 +221,10 @@ foreach my $element (keys(%db_elements)){
 }
 
 
-print "::perl is determining the strongly connected components of the graph\n";
+print "::perl is determining the strongly connected components of the graph (id: ${id_line})\n";
 my @cc=$g->strongly_connected_components();
 
-print "::writing down the strongly connected components of the graph (".($#cc+1).")\n";
+print "::writing down the strongly connected components of the graph (".($#cc+1)." components) (id: ${id_line})\n";
 
 #open(D,">>table_linked3_mod.tsv");
 #print D join("\t",@genomes)."\n";
