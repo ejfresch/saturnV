@@ -183,7 +183,7 @@ mkdir 'prot_files';
 
 
 system("ln *.faa prot_files");
-system("ln *.gff prot_files");
+system("ln */*.gff prot_files");
 system("rm *.udb");
 
 

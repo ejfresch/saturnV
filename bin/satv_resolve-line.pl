@@ -1,4 +1,4 @@
-#!/usr/bin/perl -I /home/lfreschi/tasks/achromo/installation/bin
+#!/usr/bin/perl -I /home/antony/Desktop/SaturnV/SaturnV/bin
   
 use Getopt::Long;
 use LibFASTA;

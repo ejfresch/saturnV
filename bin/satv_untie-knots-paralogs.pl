@@ -27,50 +27,51 @@ my $manager = new Parallel::ForkManager($n_cpu);
 
 open(IN_FILE,"<$input_file");
 open(OUT_FILE,">$out_file");
+open(OUT_S,">screen_paralogs.txt");
 my $line=<IN_FILE>;
 chomp($line);
 print OUT_FILE $line."\n";
 $line=~s/#//;
 my @genomes=split(/\t/,$line);
 
-my $count_overall=1;
+
 
 while($line=<IN_FILE>){
+	chomp($line);
 
-chomp($line);
-
-    $count_overall++;
-
-
-    if($line=~/,/){
-    
-
-        $manager->start and next;
-
-	    $line=~s/\t/&/g;	
-    	#print $line."\n";
-        my $cmd="satv_resolve-line.pl -g $genome_list -out $out_file -id $count_overall -i $identity_orthologs -ip $identity_paralogs -line \"$line\"";
-        system($cmd);
-
-
-        $manager->finish;
-
-     
-    }
-
-
-
-    else{print OUT_FILE $line."\n";}
-
+	if(($line=~/,/)){
+		print OUT_S $line."\n";
+	}    
+	else{
+		#print $line."\n";	
+		print OUT_FILE $line."\n";
+	}
 
 
 }
 
-$manager->wait_all_children;
-
-
 close(IN_FILE);
 close(OUT_FILE);
+close(OUT_S);
+
+my $count_overall=0;
+open(IN_S,"<screen_paralogs.txt");
+while(my $line=<IN_S>){    
+    chomp($line);
+	$count_overall++;
+    $manager->start and next;
+    $line=~s/\t/&/g;	
+    #print $line."\n";
+    my $cmd="satv_resolve-line.pl -g $genome_list -out $out_file -id $count_overall -i $identity_orthologs -ip $identity_paralogs -line \"$line\"";
+    system($cmd);
+
+
+    $manager->finish;
+
+}
+$manager->wait_all_children;
+
+close(IN_S);
 
 print "::merging results\n";
 
