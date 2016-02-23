@@ -90,7 +90,8 @@ for my $genome (@genomes){
         
         if($line eq ""){next;}
         elsif($line=~/^>/){
-            $id=$line;
+	   my @line_splited = split /\s/, $line;
+            $id=$line_splited[0];
             $id=~s/>//g;
             $db_elements{$id}{"len"}=0;
             $db_elements{$id}{"gen"}=$genome;
