@@ -4,7 +4,7 @@ use Getopt::Long;
 
 
 
-$base_path="/project/rclevesq/users/lfreschi/tasks/achromo/installation/bin/database";
+$base_path="/project/rclevesq/users/lfreschi/tasks/pseudo_all/v1.0.1/bin/database";
 my $sequences;
 my $line;
 my $line2;

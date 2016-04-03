@@ -7,16 +7,15 @@ $ids="";
 $out_file="";
 $append=0;
 
-GetOptions ("gff=s" => \$file_gff,"ids=s" => \$ids,"out=s" => \$out_file) or die("::usage: $0 -gff <gff_file> -ids <id1>,<id2> -out <out_file> -append <[0|1]> (default=0)\n");
+GetOptions ("gff=s" => \$file_gff,"ids=s" => \$ids,"out=s" => \$out_file,"append=s" => \$append) or die("::usage: $0 -gff <gff_file> -ids <id1>,<id2> -out <out_file> -append <[0|1]> (default=0)\n");
 
 
-if(($files_gff eq "") or ($ids eq "")){
+if(($file_gff eq "") or ($ids eq "")){
     print "::usage: $0 -gff <gff_file> -ids <id1>,<id2> -out <out_file> -append <[0|1]> (default=0)\n";
     exit();
 }
 
-
-@gffs=split(/,/,$file_gff);
+$gff=$file_gff;
 @ids=split(/,/,$ids);
 
 %db_ids=();

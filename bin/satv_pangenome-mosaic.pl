@@ -98,4 +98,3 @@ $manager->wait_all_children;
 
 $date=`date "+%Y-%m-%d %H:%M:%S"`;
 print "::Finished! -- $date\n";
-

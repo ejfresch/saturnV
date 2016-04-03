@@ -5,8 +5,14 @@ use Getopt::Long;
 
 GetOptions ("tab=s" => \$table, "dir=s" => \$directory) or die("::usage: $0 -tab the table -dir the directory containing the .fna files\n");
 
+if(($table eq "") or ($directory eq "")){
+    print "::usage: $0 -tab the table -dir the directory containing the .fna files\n";
+    exit();    
+}
+
+
 mkdir 'extracted_sequences';
-open(IN,"$table")||die "I cannot open table_linked3.tsv";
+open(IN,"$table")||die "I cannot open $table\n";
    	 while($line=<IN>){
      	   chomp($line);
 	$i++;
