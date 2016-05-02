@@ -29,10 +29,14 @@ SaturnV is a software that allows to compare two or more genomes in order to det
 
 Our software is named after the rocket that brought humankind to the Moon in 1969. A bit like its space couterpart, SaturnV relies on several modules that have to function one after the other in order to achieve the objectives of the mission: determining, comparing and displaying core and accessory genomes.  
 
+<nerd_stuff>
+SaturnV was mainly written in Perl. Some parts are written in R.
+</nerd_stuff>
+
 
 1 - INSTALLATION
 -----------------
-Here is the complete list of dependencies that we are asking you to install in order to run SaturnV. It might seem a lot but these software are anyway needed if you want to study bacterial genomes.
+Here is the complete list of dependencies that we are asking you to install in order to run SaturnV. It might seem a lot but these software are anyway kind of needed if you want to study bacterial genomes.
 * perl + 3 perl libraries ()
 * prokka 
 * blastp
@@ -42,14 +46,76 @@ Here is the complete list of dependencies that we are asking you to install in o
 * R + 2 R libraries ()
 * mummer
 
-Do not worry. It is not complicated! 
+Do not worry. It is not complicated! We have developed some tools to help you going through all these steps.
+
+Here is an example of a typical installation process:
+
+--step1: copy the saturnV repository to your computer. Open a terminal emulator, and type:
+git clone https://ejfresch@bitbucket.org/ejfresch/saturnv.git 
+
+NOTE: you should have git installed! If it is not the case, please install it (hint: sudo atp-get install git). 
+
+--step2: run the installation scripts.
+First, check if all dependecies are installed on your computer. To do this, just go into the saturnv directory and run ./check_deps.pl
+If some of the dependencies are not installed, you can either install them by yourself or simply run the installer. The installer will check the situation and either install the dependencies or tell you what to do (if you have Debian/Ubuntu or derivaties). To run the installer, just type ./install2.pl -d <directory_where_you_want_to_install_saturnV>
+
+Personally, I installed it onto my sw (sw for software) directory:
+./install2.pl -d /home/lfreschi/sw/saturnv/
 
 
+--step3: check that everything is OK.
+to check that everything went well, type satv_ and then hit the tab key twice. You should be able to see the whole list of SaturnV commands:
+
+lfreschi@katak:~/tasks/pangenome/test_saturn/saturnv> satv_
+satv_build-mosaic.pl                     satv_extract-ID-by-coords.pl             satv_reconstruct-mosaic.pl
+satv_check-distrib-scaffolds.R           satv_extract-shared.pl                   satv_rename-strains.pl
+[...the list continues...]
+
+If you are in trouble or you think you have followed all these steps but you just got some complicated error message, just write a message to l.freschi@gmail.com
 
 
 
 2 - HOW TO DETERMINE THE CORE AND ACCESSORY GENOMES
 ----------------------------------------------------
+
+SaturnV comes with a small dataset of Achromobacter genomes (n = 3). You can find them into the directory examples/achromo/. We will use this dataset to go through the SaturnV commands and show you how you can use SaturnV to determine core and accessory genomes. 
+
+--step1: create a working directory for the new analysis and create the subdirectory genomes/. Then copy the genomes you want to analyze into genomes/:
+
+#I create the working directory
+mkdir satv_results
+
+#I move into it
+cd satv_results
+
+#I create the genomes/ directory
+mkdir genomes
+
+
+#I copy the genoms inside the genome directory
+#general synthax: cp <directory_where_you_installed_saturnV>/examples/achromo/* genomes/
+#in my case:
+cp ~/sw/saturnv/examples/achromo/* genomes/
+
+
+--step2: launch the analysis
+
+#general synthax: satv_launch.pl -d <directory_genomes_to_analyze> -c <cpus_available_for_multithreading> -ann <annotation_software[prokka|prodigal]> -m <clustering_method[lazy|strict|strictest|centroids]> -a <search_algorithm[usearch|blast]> -i <min_perc_identity_orthologs> -ip <min_perc_identity_paralogs>
+
+satv_launch.pl -d genomes/ -c 2 -ann prodigal -m strict -a usearch -i 50 -ip 100
+
+
+--step3: look at the results
+
+the main output is the table_linked5_<method>.tsv. When we launched saturnV, we specified to use the strict method for the clustering step, so the file name will be table_linked5_strict.tsv. 
+
+This file is a tab separated value (.tsv) file. In each row there is a gene and in each column there is its ortholog in another genome. 
+
+Another output is the annotation. By typing the command "ls" you will see that there are 3 folders, each one with the name of one of the genomes we analyzed. These folders contain the annotation.
+If you ran prodigal
+
+
+
 
 NOTE: all files MUST have the extension .fasta
 
