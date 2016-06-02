@@ -1,9 +1,9 @@
-#!/usr/bin/perl -I /project/rclevesq/users/lfreschi/tasks/pseudo_all/v1.0.1/bin
+#!/usr/bin/perl -I /home/luca/sw/saturnv/bin
 
 
 
 
-$dir_web_data="/project/rclevesq/users/lfreschi/tasks/pseudo_all/v1.0.1/web";
+$dir_web_data="/home/luca/sw/saturnv/web";
 
 
 use Getopt::Long;

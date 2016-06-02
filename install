@@ -1,0 +1,53 @@
+#!/usr/bin/perl
+
+use Getopt::Long;
+
+$install_dir="";
+$modules="";
+
+GetOptions ("d=s" => \$install_dir,"m=s" => \$modules) or die("::usage: $0 -d <install_dir> -m <module1>,<module2>,<moduleN>\n--example: $0 -d /home/luca/saturnv -m core\n\nPlease remember to use an absolute path!\n");
+
+if(($install_dir eq "") or ($modules eq "")){
+    print "::usage: $0 -d <install_dir> -m <module1>,<module2>,<moduleN>\n";
+    print "--example: $0 -d /home/luca/saturnv -m core\n\nPlease remember to use an absolute path!\n";
+
+    exit();
+}
+
+
+
+@mods=split(/,/,$modules);
+
+#testing all dependencies
+
+print "::I check if the dependences are installed\n";
+foreach $mod (@mods){
+
+	$cmd="./modules/install/bin/check_deps_module $mod";
+	system($cmd);
+	
+
+}
+
+
+
+print "::I create the new directories\n";
+mkdir($install_dir);
+mkdir("$install_dir/bin");
+
+	print "::installing modules\n";
+foreach $mod (@mods){
+	print "--$mod\n";
+	$cmd="./modules/${mod}/install_module.sh ${install_dir}";
+	system($cmd);
+}
+
+print "::I set up the .bashrc file\n";
+$cmd="./modules/install/bin/satv_load_distribution -path ${install_dir} -new 1";
+system($cmd);
+
+
+
+
+
+

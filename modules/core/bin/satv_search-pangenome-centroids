@@ -4,7 +4,7 @@ use Getopt::Long;
 
 
 $genome_list="";
-$identity_orthologs="90";
+$identity_orthologs="50";
 $n_cpu=1;
 $file_out="table_linked5_centroids.tsv";
 
@@ -15,9 +15,6 @@ if($genome_list eq ""){
     exit();
 }
 
-
-my $date=`date "+%Y-%m-%d %H:%M:%S"`;
-print "::Starting analysis at $date\n";
 
 
 $identity_orthologs_usearch=$identity_orthologs/100;
@@ -110,8 +107,5 @@ close(OUT);
 
 
 
-my $date=`date "+%Y-%m-%d %H:%M:%S"`;
-print "::Finishing analysis at $date\n";
-print "::Bye\n";
 
 

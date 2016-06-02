@@ -1,0 +1,44 @@
+#!/usr/bin/perl
+
+use Getopt::Long;
+
+$path="";
+$new=0;
+
+GetOptions ("path=s" => \$path,"new=s" => \$new) or die("::usage: $0 -path <path> -new <[0|1;default=0]>\n");
+
+
+
+if($path eq ""){
+	print "::usage: $0 -path <path> -new <[0|1;default=0]>\n";
+	exit();
+}
+
+
+
+if($new eq "0"){
+
+	$cmd="cp ~/.bashrc mod_bashrc";
+	system($cmd);
+
+	$path=s/\//\\\//g;
+	print $path."\n";
+
+	$cmd="cat mod_bashrc|sed -e 's/PATH_SATV=.+/PATH_SATV=${path}/' > ~/.bashrc";
+	system($cmd);
+
+}
+
+elsif($new eq "1"){
+
+
+	#I set up the path for the first time
+	system("printf \"#SaturnV\n\" >> ~/.bashrc");
+	system("printf \"PATH_SATV=${path}\n\" >> ~/.bashrc");
+	system("echo 'export PATH=\${PATH_SATV}/bin:\$PATH' >> ~/.bashrc");
+
+
+}
+
+
+

@@ -30,6 +30,7 @@ my %avail_algs=(
 );
 
 my %avail_methods=(
+    "laziest" => 1,
     "lazy" => 1,
     "strict" => 1,
     "strictest" => 1,
@@ -123,6 +124,12 @@ print "::3..2..1..and...lift off -- $date";
 
 
     #determining the pangenome --second stage
+    if($method eq "laziest"){
+
+        $cmd="satv_search-pangenome-laziest.pl -g genomes_to_analyze.txt -c $n_cpu -i $identity_orthologs -a $alg";
+        system($cmd);
+    }
+
     if($method eq "lazy"){
 
         $cmd="satv_search-pangenome-lazy.pl -g genomes_to_analyze.txt -c $n_cpu -i $identity_orthologs -f $force -a $alg -sim $sim";

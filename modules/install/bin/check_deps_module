@@ -1,0 +1,57 @@
+#!/usr/bin/perl
+
+
+#############
+##FUNCTIONS##
+#############
+
+sub check_if_installed(){
+	
+	@list=@_;
+	$name=$list[0];
+	$check=$list[1];
+	$msg=$list[2];	
+
+	$ret=system($check);
+	if($ret ne 0){
+		print "--please install $name // $msg\n";	    	
+	}
+	else{
+		print "--$name (OK)\n";
+	}
+
+
+}
+
+########
+##MAIN##
+########
+
+$mod=$ARGV[0];
+
+if(!(-e "modules/${mod}/dependencies.txt")){
+	print "::Sorry, the module you specified does not exist!\n";
+	exit();
+}
+
+
+print "::checking dependencies for module $mod\n";
+
+
+@data_r=();
+
+open(IN,"<modules/${mod}/dependencies.txt");
+while($line=<IN>){
+	chomp($line);
+	@data=split(/##/,$line);
+	&check_if_installed(@data);
+}
+
+
+
+close(IN);
+
+
+
+
+

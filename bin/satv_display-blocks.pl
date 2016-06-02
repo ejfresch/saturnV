@@ -2,7 +2,7 @@
 
 use Getopt::Long;
 
-$dir_web_data="/project/rclevesq/users/lfreschi/tasks/pseudo_all/v1.0.1/web";
+$dir_web_data="/home/luca/sw/saturnv/web";
 
 $file_in="";
 $ref_strain="";

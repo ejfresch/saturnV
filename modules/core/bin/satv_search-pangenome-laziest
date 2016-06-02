@@ -1,0 +1,297 @@
+#!/usr/bin/perl
+use strict;
+
+use Getopt::Long;
+use Graph;
+
+#here are the available algorithms for the search
+my %avail_algs=(
+"usearch" => {
+	"makedb" => "usearch8 -makeudb_usearch <faa> -output <faa>.udb >> log_file 2>&1",
+	"search" => "usearch8 -usearch_local <first_genome> -threads 1 -db <current_genome>.udb -id <id> -userout <current_genome>_laziest.txt -userfields query+target+id+alnlen+mism+opens+qlo+qhi+tlo+thi+evalue+bits+ql+tl >> log_file 2>&1"
+},
+"blast" => {
+	"makedb" => "makeblastdb -in <faa> -dbtype prot > /dev/null",
+	"search" => "blastp -query <first_genome> -db <current_genome> -out <current_genome>_laziest.txt -seg no -outfmt \"6 qlen slen\""
+},
+"last" => {
+	"makedb" => "lastdb -p <faa> <faa>",
+	"search" => "lastal -k 10 -f BlastTab+ <current_genome> <first_genome> > <current_genome>_laziest.txt"
+
+}
+
+);
+
+
+my $genome_list="";
+my $n_cpu=1;
+my $identity_orthologs=50;
+my $query_cov=0.85;
+my $hit_cov=0.85;
+my $alg="usearch";
+my $file_out="table_linked5_laziest.tsv";
+
+
+GetOptions ("g=s" => \$genome_list,"out=s"   => \$file_out,"c=s"   => \$n_cpu,"i=s"   => \$identity_orthologs,"a=s"=> \$alg) or die("::usage: $0 -g <genomes_list> -c <n_cpu[default=1]> -i <perc_identity[default=50]> -a <algorithm[default=usearch]>\n[ERROR] launch failed! Please check the parameters!\n");
+
+
+if($genome_list eq ""){
+
+    print "::usage: $0 -g <genomes_list> -c <n_cpu[default=1]> -i <perc_identity[default=50]> -a <algorithm[default=usearch]>\n";
+    exit();
+}
+
+if(!(exists($avail_algs{$alg}))){
+    print "::I do not know this algorithm!\n";
+}
+
+
+
+
+my $identity=$identity_orthologs/100;
+
+
+
+my $date=`date "+%Y-%m-%d %H:%M:%S"`;
+print "::Starting analysis at $date\n";
+
+
+my @genomes=`cat $genome_list`;
+chomp(@genomes);
+
+############
+##INDEXING##
+############
+
+open(CMD,">commands-create-db.txt");
+for my $genome (@genomes){
+
+
+	my $cmd=$avail_algs{$alg}{"makedb"};
+	$cmd=~s/<faa>/${genome}/g;
+	print CMD $cmd."\n";
+
+}
+
+close(CMD);
+chmod(0775, "commands-create-db.txt");
+
+
+
+$date=`date "+%Y-%m-%d %H:%M:%S"`;
+print "::Starting indexing sequences at $date";
+
+
+print "::Indexing sequences\n";
+my $cmd="parallel -j $n_cpu < commands-create-db.txt";
+system($cmd);
+
+
+$date=`date "+%Y-%m-%d %H:%M:%S"`;
+print "::Finished indexing sequences at $date\n";
+
+
+######################################
+##DETERMINING THE NODES OF THE GRAPH##
+######################################
+
+
+$date=`date "+%Y-%m-%d %H:%M:%S"`;
+print "::Starting detecting the nodes of the graph at $date";
+
+my $cmd="> nodes.txt";
+system($cmd);
+
+
+open(CMD,">commands-detect-nodes.txt");
+for my $genome (@genomes){
+	my $cmd="grep \">\" $genome >> nodes.txt\n";
+	print CMD $cmd;
+
+}
+close(CMD);
+chmod(0775, "commands-detect-nodes.txt");
+
+
+
+print "::Detecting the nodes of the graph\n";
+my $cmd="parallel -j $n_cpu < commands-detect-nodes.txt";
+system($cmd);
+
+
+$date=`date "+%Y-%m-%d %H:%M:%S"`;
+print "::Finished detecting the nodes of the graph at $date\n";
+
+
+
+my $graph = Graph::Undirected->new;
+
+open(IN,"<nodes.txt");
+while(my $node=<IN>){
+	chomp($node);
+	$node=~s/^>//;
+
+	if(!($graph->has_vertex($node))){
+	        $graph->add_vertex($node);        
+	}    
+}
+close(IN);
+
+
+
+############
+##SEARCHES##
+############
+
+
+open(CMD,">commands-exec-searches.txt");
+
+
+my $first_genome=$genomes[0];
+
+for my $genome (@genomes[1..$#genomes]){
+    
+	my $cmd=$avail_algs{$alg}{"search"};
+	
+	$cmd=~s/<first_genome>/${first_genome}/g;
+	$cmd=~s/<current_genome>/${genome}/g;
+	$cmd=~s/<id>/${identity}/g;
+
+
+	print CMD $cmd."\n";
+
+
+}
+close(CMD);
+chmod(0775, "commands-exec-searches.txt");
+
+$date=`date "+%Y-%m-%d %H:%M:%S"`;
+print "::Starting performing $alg searches at $date";
+print "--Performing $alg searches\n";
+$cmd="parallel -j $n_cpu < commands-exec-searches.txt";
+system($cmd);
+$date=`date "+%Y-%m-%d %H:%M:%S"`;
+print "::Finished performing $alg searches at $date\n";
+
+
+
+$date=`date "+%Y-%m-%d %H:%M:%S"`;
+print "::Started parsing the results at $date";
+print "--Parsing the results\n";
+#now I can read the usearch output and draw some conclusions
+
+#I empty the results_searches_file
+my $cmd="> results_searches.txt";
+system($cmd);
+
+my $cmd="for i in `ls|grep \"_laziest.txt\$\"`;do cat \$i >> results_searches.txt;done";
+#print $cmd."\n";
+system($cmd);
+
+
+
+
+open(IN,"<results_searches.txt")||die "I cannot open results_searches.txt";
+while(my $line=<IN>){
+        chomp($line);
+	if($line=~/^#/){next;}
+
+        #print $line."\n";
+        my @data=split(/\t/,$line);
+
+        my $query=$data[0];
+        my $hit=$data[1];
+
+	my $length_query=$data[12];
+	my $length_hit=$data[13];
+ 
+        if($query eq $hit){next;}
+        
+        my $perc_identity=$data[2]; # identity
+	
+        if($perc_identity<$identity_orthologs){next;}
+
+        my $length_alignment=$data[3];
+        
+       # print $query."-".$hit."-"."$identity"."-".$length_alignment."-".($length_query*0.85)."-".($length_hit*0.85)."\n";
+
+        if(($length_alignment >= ($length_query*$query_cov)) and ($length_alignment >= ($length_hit*$hit_cov)) ){
+		            
+		$graph->add_path($query,$hit);
+
+            }        
+
+}
+close(IN);
+    
+
+
+$date=`date "+%Y-%m-%d %H:%M:%S"`;
+print "::Finished parsing the results at $date\n";
+
+
+
+#print "The graph is $graph\n";
+my $date=`date "+%Y-%m-%d %H:%M:%S"`;
+chomp($date);
+print "::Perl is determining the connected components of the graph -- $date\n";
+my @cc=$graph->connected_components();
+
+
+my $date=`date "+%Y-%m-%d %H:%M:%S"`;
+
+print "--Writing down the connected components of the graph (".($#cc+1).")\n";
+
+open(OUT,">table_linked5_laziest.tsv");
+my $header="#".join("\t",@genomes);
+print OUT $header."\n";
+
+
+foreach my $c (@cc){
+
+    my %hash_results=();
+    my @current_cc=@$c;
+	#print "START\n";
+    foreach my $element (@current_cc){
+
+        if($element eq "-"){next;}
+        #print $element."\n";
+        my @explode=split(/_/,$element);
+        #print $explode[0]."\n";
+	my $tag_genome=$explode[0].".faa";
+        $hash_results{$tag_genome}{$element}=1;        
+
+
+     
+    }
+
+	#print "END\n";
+
+    my @final_arr=();    
+    
+    foreach my $genome (@genomes){
+    #print $genome."\n";
+    if(exists($hash_results{$genome})){
+       
+        my $ref=$hash_results{$genome};
+
+        my %arr=%$ref;
+        push(@final_arr,join(",",sort(keys(%arr))));
+    }
+    else{push(@final_arr,"-");}
+
+    }
+
+    print OUT join("\t",@final_arr)."\n";
+
+}
+
+close(OUT);
+
+my $date=`date "+%Y-%m-%d %H:%M:%S"`;
+print "::Perl finished determining the connected components of the graph -- $date\n";
+
+
+$date=`date "+%Y-%m-%d %H:%M:%S"`;
+print "::Analysis completed at $date";
+print "Bye!\n";

@@ -1,4 +1,4 @@
-#!/usr/bin/perl -I /project/rclevesq/users/lfreschi/tasks/pseudo_all/v1.0.1/bin
+#!/usr/bin/perl -I /home/luca/sw/saturnv/bin
 
 use strict;
 use LibFASTA;

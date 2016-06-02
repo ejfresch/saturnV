@@ -1,0 +1,6 @@
+prokka##which prokka > /dev/null##you can download it from http://www.vicbioinformatics.com/software.prokka.shtml
+prodigal##which prodigal > /dev/null##you can download it from http://prodigal.ornl.gov/; if you install prokka, prodigal comes with it
+usearch##which usearch8 > /dev/null##you can download it from http://www.drive5.com/usearch/; please rename the binary usearch8
+last##which lastal > /dev/null##you can download it from http://last.cbrc.jp
+blast##which blastp > /dev/null##
+seqtk##which seqtk > /dev/null##you can download seqtk from https://github.com/lh3/seqtk
