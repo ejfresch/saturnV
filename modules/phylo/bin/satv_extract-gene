@@ -1,0 +1,52 @@
+#!/usr/bin/perl
+
+use Getopt::Long;
+
+GetOptions ("tab=s" => \$table, "fna=s" => \$directory) or die("::usage: $0 -tab <table> -fna <dir_fna>\n");
+
+if(($table eq "") or ($directory eq "")){
+    print "::usage: $0 -tab <table> -fna <dir_fna>\n";
+    exit();
+}
+
+mkdir("core11_genes");
+open(IN,"$table")||die "I cannot open $table\n";
+  @data=<IN>;
+  chomp(@data);
+close(IN);
+
+$header=$data[0];
+$header=~s/#//;
+$header=~s/.faa/.ffn/g;
+@genomes=split(/\t/,$header);
+
+$count=0;
+
+foreach $line (@data[1..$#data]){
+
+
+  if($line=~/,/){next;}
+  if($line=~/\t\-/){next;}
+
+  $count++;
+
+  $name="seq_".$count.".fasta";
+
+  $cmd="> ${name}";
+  system($cmd);
+
+  @seqs=split(/\t/,$line);
+
+  for($i=0;$i<=$#seqs;$i++){
+
+
+  $cmd='echo ">'.$seqs[$i]."\" >> current_seq.txt";
+  print $cmd."\n";
+  system($cmd);
+
+	#my $cmd="seqtk subseq ".${directory}."/".$genomes[$i]." current_seq.txt >> ${name}";
+	#print $cmd."\n";
+	#system($cmd);
+  }
+
+}
