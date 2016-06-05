@@ -2,12 +2,13 @@
 
 use Getopt::Long;
 
-GetOptions ("tab=s" => \$table, "fna=s" => \$directory) or die("::usage: $0 -tab <table> -fna <dir_fna>\n");
+GetOptions ("tab=s" => \$table, "ffn=s" => \$directory) or die("::usage: $0 -tab <table> -ffn <dir_ffn>\n");
 
 if(($table eq "") or ($directory eq "")){
-    print "::usage: $0 -tab <table> -fna <dir_fna>\n";
+    print "::usage: $0 -tab <table> -ffn <dir_ffn>\n";
     exit();
 }
+
 
 mkdir("core11_genes");
 open(IN,"$table")||die "I cannot open $table\n";
@@ -39,14 +40,16 @@ foreach $line (@data[1..$#data]){
 
   for($i=0;$i<=$#seqs;$i++){
 
+	print "\r--extracting seq $count -- genome $i\n";
 
-  $cmd='echo ">'.$seqs[$i]."\" >> current_seq.txt";
-  print $cmd."\n";
-  system($cmd);
 
-	#my $cmd="seqtk subseq ".${directory}."/".$genomes[$i]." current_seq.txt >> ${name}";
-	#print $cmd."\n";
-	#system($cmd);
+  	$cmd='echo "'.$seqs[$i]."\" >> current_seq.txt";
+  	print $cmd."\n";
+  	system($cmd);
+
+	my $cmd="seqtk subseq ".${directory}."/".$genomes[$i]." current_seq.txt >> ${name}";
+	print $cmd."\n";
+	system($cmd);
   }
 
 }
