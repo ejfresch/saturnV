@@ -1,0 +1,31 @@
+The purpose of this module is to be able to use the outputs of saturnV to generate:
+(1) a core genome phylogeny based on the SNPs found in the core genomes
+(2) build a phylogeny based on the presence/absence of genes
+
+Let's start with the path (1).
+--STEP 1: extract the 1:1 core genes, i.e. the clusters of core genes for which in each genome we find one and only one gene:
+satv_extract-core11-seqs -tab <table> -d <dir_seqs> -ext <file_extension>
+
+example:
+satv_extract-core11-seqs -tab table_linked5_strictest.tsv -d ffn/ -ext ffn
+
+NOTE: The script creates the directory "core11_genes".
+
+--STEP2: align the sequences and retain only the positions that are phylogenetically relevant (the ones where there are SNPs).
+The alignments are calculated using Prank. The trimming step is performed using BMGE.
+
+Let's create a folder for the alignments
+mkdir alignments
+and move inside this directory:
+cd alignments
+
+then let's launch the command to get the alignments:
+satv_align-and-trim-core-genes -d <dir_seqs_genes> -c <n_cpu>
+
+example:
+satv_align-and-trim-core-genes -d ../core11_genes -c 32
+
+
+--STEP 3: preprare the data to generate the tree. The alignments are concatenated using phyutility and the rusulting file (all.trim.aln.nex) is converted in phylip format using seqmagick.
+
+--STEP 4: generate the tree.

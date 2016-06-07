@@ -1,0 +1,53 @@
+#!/usr/bin/perl
+
+use Getopt::Long;
+
+$n_cpu=1;
+$directory="";
+
+GetOptions ("d=s" => \$directory, "c=s" => \$n_cpu) or die("::usage: $0 -d <dir_seqs_genes> -c <n_cpu>\n");
+
+if($directory eq ""){
+    print "::usage: $0 -d <dir_seqs_genes> -c <n_cpu>\n";
+    exit();
+}
+
+$path_to_bmge="/home/lfreschi/tasks/achromo/sw/BMGE-1.12";
+if(!(-e "${path_to_bmge}/BMGE.jar")){
+  print "--I do not know where BMGE.jar is installed.\n Please open $0 and modify the variable \$path_to_bmge\n Thanks!\n";
+  exit();
+}
+
+#print "--I will use $n_cpu cpus\n";
+
+@list_files=`ls ${directory}`;
+chomp(@list_files);
+
+open(OUT,">commands_align.txt");
+foreach $file (@list_files){
+  $basename=$file;
+  $basename=~s/.fasta//;
+	$cmd="prank -d=${directory}/${file} -o=${basename}.aln -codon -F >> log_PRANK 2>&1";
+  print OUT $cmd."\n";
+        }
+
+close(OUT);
+chmod(0775, "commands_align.txt");
+
+print "::Aligning sequences\n";
+my $cmd="parallel -j $n_cpu < commands_align.txt";
+system($cmd);
+
+open(OUT,">commands_trim.txt");
+foreach $file (@list_files){
+  $basename=$file;
+  $basename=~s/.fasta//;
+  $cmd="java -jar ${path_to_bmge}/BMGE.jar -i ${basename}.aln.best.fas -t DNA -m ID -h 0.0005:1 -of ${basename}.trim.aln -oh ${basename}.trim.html >> log_BMGE 2>&1";
+  print OUT $cmd."\n";
+}
+chmod(0775, "commands_trim.txt");
+
+
+print "::Trimming sequences\n";
+my $cmd="parallel -j $n_cpu < commands_trim.txt";
+system($cmd);

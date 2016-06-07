@@ -4,3 +4,4 @@ usearch##which usearch8 > /dev/null##you can download it from http://www.drive5.
 last##which lastal > /dev/null##you can download it from http://last.cbrc.jp
 blast##which blastp > /dev/null##
 seqtk##which seqtk > /dev/null##you can download seqtk from https://github.com/lh3/seqtk
+parallel##which parallel > /dev/null##you can download GNU parallel from https://www.gnu.org/software/parallel/

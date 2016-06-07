@@ -1,0 +1,59 @@
+#!/usr/bin/perl
+
+use Getopt::Long;
+
+GetOptions ("tab=s" => \$table, "d=s" => \$directory, "ext=s" => \$ext) or die("::usage: $0 -tab <table> -d <dir_seqs> -ext <file_extension>\n");
+
+if(($table eq "") or ($directory eq "") or ($ext eq "")){
+    print "::usage: $0 -tab <table> -d <dir_seqs> -ext <file_extension>\n";
+    exit();
+}
+
+
+mkdir("core11_genes");
+open(IN,"<$table")||die "I cannot open $table\n";
+  @data=<IN>;
+  chomp(@data);
+close(IN);
+
+$header=$data[0];
+$header=~s/#//;
+$header=~s/faa/$ext/g;
+@genomes=split(/\t/,$header);
+#print join("::",@genomes)."\n";
+
+
+$count=0;
+
+foreach $line (@data[1..$#data]){
+
+
+  if($line=~/,/){next;}
+  if($line=~/\t\-/){next;}
+
+  $count++;
+
+  $name="seq_".$count.".fasta";
+  print "\r--extracting seq $count";
+
+  @seqs=split(/\t/,$line);
+  #print join("::",@seqs)."\n";
+
+  open(OUT,">core11_genes/${name}");
+
+  for($i=0;$i<=$#seqs;$i++){
+    $seq=$seqs[$i];
+    $genome=$genomes[$i];
+
+    $dat = `cat ${directory}/$genome`;
+    ($fa) = $dat =~ /(>$seq[^>]+)/s;
+    ($fa) =~s/_.+//;
+
+    print OUT $fa;
+
+
+  }
+
+  close(OUT);
+
+}

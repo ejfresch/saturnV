@@ -1,0 +1,38 @@
+#!/usr/bin/perl
+
+use Getopt::Long;
+
+$file_in="";
+$n_cpu=1;
+$bootstraps=1000;
+$method="raxml";
+
+%avail_methods={
+  "ft"=> 1;
+  "raxml"=>1;
+}
+
+GetOptions ("p=s" => \$file_in,"c=s" => \$n_cpu,"b=s" => \$bootstraps,"m=s" => \$method) or die("::usage: $0 -p <phylip_file> -m <method[raxml|ft]> -c <n_cpu> -b <n_bootstraps>\n");
+
+if($file_in eq ""){
+    print "::usage: $0 -p <phylip_file> -m <method[raxml|ft]> -c <n_cpu> -b <n_bootstraps>\n";
+    exit();
+}
+
+if(!(exists($avail_method{$method}))){
+    print "::usage: $0 -p <phylip_file> -m <method[raxml|ft]> -c <n_cpu> -b <n_bootstraps>";
+    exit();
+}
+
+if($method eq "raxml"){
+  print "::Calculating the tree -- raxml\n";
+  $cmd="raxmlHPC-PTHREADS-AVX -f a -p 12345 -s $file_in -x 12345 -# $bootstraps -m GTRGAMMA -n out_tree-raxml -T $n_cpu";
+  system($cmd);
+}
+elsif($method eq "ft"){
+  print "::Calculating the tree -- ft\n";
+  print "--NOTE: I am using FastTree without multithreading\n";
+
+  $cmd="FastTree -boot $bootstraps -nt -gtr < $file_in > out_tree-ft.tree";
+  system($cmd);
+}

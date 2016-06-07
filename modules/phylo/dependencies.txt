@@ -1,0 +1,10 @@
+java##which  prank > /dev/null##you can download java fom http://java.com/en/download/
+parallel##which parallel > /dev/null##you can download GNU parallel from https://www.gnu.org/software/parallel/
+prank##which prank > /dev/null##you can download prank from http://wasabiapp.org/software/prank/
+BMGE##which BMGE.jar > /dev/null##you can download BMGE from ftp://ftp.pasteur.fr/pub/GenSoft/projects/BMGE/
+seqmagick##which seqmagick.py > /dev/null##you can download seqmagick from http://seqmagick.readthedocs.io/en/latest/
+phyutility##which phyutility.jar >/dev/null##you can download phyutility from https://github.com/blackrim/phyutility
+raxml##which raxmlHPC-PTHREADS-AVX > /dev/null##you can download raxml from https://github.com/stamatak/standard-RAxML (please install the AVX version)
+FastTree##which FastTree > /dev/null##you can download FastTree from http://www.microbesonline.org/fasttree/
+
+
