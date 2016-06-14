@@ -53,17 +53,17 @@ if($dir_genomes eq ""){
 
 if(!(exists($avail_algs{$alg}))){
     print "::[ERROR] I do not know the search algorithm you specified\n";
-    exit();    
+    exit();
 }
 
 elsif(!(exists($avail_ann{$ann}))){
     print "::[ERROR] I do not know the annotation software you specified\n";
-    exit();    
+    exit();
 }
 
 elsif(!(exists($avail_methods{$method}))){
     print "::[ERROR] I do not know the method you specified\n";
-    exit();    
+    exit();
 }
 
 
@@ -75,38 +75,38 @@ print "::3..2..1..and...lift off -- $date";
 
 #prokka annotation -- first stage
     print "::First stage\n";
-    
+
 
     if($ann eq "prodigal"){
 
-   	 $cmd="satv_prodigal-driver.pl -d ${dir_genomes} -c $n_cpu";
+   	 $cmd="satv_prodigal-driver -d ${dir_genomes} -c $n_cpu";
    	 system($cmd);
     }
     elsif($ann eq "prokka"){
 
         if($knife ne ""){
-    	 $cmd="satv_prokka-driver.pl -d ${dir_genomes} -c $n_cpu -k $knife";
+    	 $cmd="satv_prokka-driver -d ${dir_genomes} -c $n_cpu -k $knife";
      	 system($cmd);
-        
+
         }
         else{
-    	 $cmd="satv_prokka-driver.pl -d ${dir_genomes} -c $n_cpu";
+    	 $cmd="satv_prokka-driver -d ${dir_genomes} -c $n_cpu";
      	 system($cmd);
-  
+
 
         }
 
     }
 
- 
-    
+
+
 
 
    print "::Interstage -- generating the genomes_to_analyze.txt file\n";
     #I copy all the .faa files and generate the file genomes_to_analyze.txt
 
     system("satv_generate_list_genomes");
-    
+
 
     print "::Second stage \n";
 
@@ -155,9 +155,3 @@ $date=`date "+%Y-%m-%d %H:%M:%S"`;
 $end_run = time();
 $run_time = $end_run - our $start_run;
 print "::Mission accomplished by SaturnV in $run_time seconds -- $date\n";
-
-
-
-
-
-

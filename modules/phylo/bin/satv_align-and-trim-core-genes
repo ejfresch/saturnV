@@ -23,11 +23,12 @@ if(!(-e "${path_to_bmge}/BMGE.jar")){
 @list_files=`ls ${directory}`;
 chomp(@list_files);
 
+
 open(OUT,">commands_align.txt");
 foreach $file (@list_files){
   $basename=$file;
   $basename=~s/.fasta//;
-	$cmd="prank -d=${directory}/${file} -o=${basename}.aln -codon -F >> log_PRANK 2>&1";
+	$cmd="prank -d=${directory}/${file} -o=${basename}.aln -codon -F >> log_PRANK_${basename}.txt 2>&1";
   print OUT $cmd."\n";
         }
 
@@ -42,7 +43,7 @@ open(OUT,">commands_trim.txt");
 foreach $file (@list_files){
   $basename=$file;
   $basename=~s/.fasta//;
-  $cmd="java -jar ${path_to_bmge}/BMGE.jar -i ${basename}.aln.best.fas -t DNA -m ID -h 0.0005:1 -of ${basename}.trim.aln -oh ${basename}.trim.html >> log_BMGE 2>&1";
+  $cmd="java -jar ${path_to_bmge}/BMGE.jar -i ${basename}.aln.best.fas -t DNA -m ID -h 0.0005:1 -of ${basename}.trim.aln -oh ${basename}.trim.html >> log_BMGE_${basename}.txt 2>&1";
   print OUT $cmd."\n";
 }
 chmod(0775, "commands_trim.txt");
@@ -51,3 +52,27 @@ chmod(0775, "commands_trim.txt");
 print "::Trimming sequences\n";
 my $cmd="parallel -j $n_cpu < commands_trim.txt";
 system($cmd);
+
+print "::Checking results\n";
+#checking if all files are there
+foreach $file (@list_files){
+  $basename=$file;
+  $basename=~s/.fasta//;
+  $res_aln="OK";
+  $res_trim="OK";
+
+  if(!(-e "${basename}.aln.best.fas")){
+    $res_aln='missing';
+  }
+
+  if(!(-e "${basename}.trim.aln")){
+    $res_trim='missing';
+  }
+
+  if(($res_aln eq "missing") or ($res_trim eq "missing")){
+    print "$basename: aln -- $res_aln; trim -- $res_trim\n";
+
+  }
+
+
+}

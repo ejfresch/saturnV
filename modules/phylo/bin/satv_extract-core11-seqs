@@ -10,6 +10,20 @@ if(($table eq "") or ($directory eq "") or ($ext eq "")){
 }
 
 
+#I remove all the comments from the files
+print "::Removing comments from $ext files\n";
+
+$cmd="ls ${directory} | grep \"${ext}\$\"";
+@list_files=`$cmd`;
+chomp(@list_files);
+
+foreach $file (@list_files){
+  $cmd="/home/lfreschi/tasks/achromo/cmp_satv_roary_all_jun2016/satv/saturnv/modules/phylo/bin/satv_remove-comments-fasta -in ${directory}/${file}";
+  system($cmd);
+
+}
+
+
 mkdir("core11_genes");
 open(IN,"<$table")||die "I cannot open $table\n";
   @data=<IN>;
@@ -18,26 +32,33 @@ close(IN);
 
 $header=$data[0];
 $header=~s/#//;
-$header=~s/faa/$ext/g;
+$header=~s/\.faa/\.${ext}_nocomment.txt/g;
 @genomes=split(/\t/,$header);
 #print join("::",@genomes)."\n";
 
 
-$count=0;
+$count=1;
 
 foreach $line (@data[1..$#data]){
 
-
-  if($line=~/,/){next;}
-  if($line=~/\t\-/){next;}
-
   $count++;
 
-  $name="seq_".$count.".fasta";
-  print "\r--extracting seq $count";
+  if($line=~/,/){next;}
 
   @seqs=split(/\t/,$line);
   #print join("::",@seqs)."\n";
+
+  $flag=0;
+  foreach $s (@seqs){
+    if($s eq "-"){$flag=1;}
+  }
+
+  if($flag eq "1"){next;}
+
+  $name="line_".$count.".fasta";
+  print "\r::Extracting sequences - line $count";
+
+
 
   open(OUT,">core11_genes/${name}");
 
