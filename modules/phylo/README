@@ -25,7 +25,15 @@ satv_align-and-trim-core-genes -d <dir_seqs_genes> -c <n_cpu>
 example:
 satv_align-and-trim-core-genes -d ../core11_genes -c 32
 
+NOTE: it is important to make sure to read the report of the missing files and make sure all files are there. If some files have not been generated (it can happen, usually due to Prank), please run Prank and BMGE manually for each one of the missing files:
+* prank -d=../core11_genes/<line_number>.fasta -o=line_<line_number>.aln -codon -F
+* java -jar <path_to_BMGE.jar> -i line_<line_number>.aln.best.fas -t DNA -m ID -h 0.0005:1 -of line_<line_number>.trim.aln -oh line_<line_number>.trim.html
+
 
 --STEP 3: preprare the data to generate the tree. The alignments are concatenated using phyutility and the rusulting file (all.trim.aln.nex) is converted in phylip format using seqmagick.
+
+
+NOTE: problem if names > 10 characters
+
 
 --STEP 4: generate the tree.

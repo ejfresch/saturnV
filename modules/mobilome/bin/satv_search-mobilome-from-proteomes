@@ -1,0 +1,331 @@
+#!/prg/python/2.7/bin/python
+
+from subprocess import call,check_output
+from os import path, makedirs
+from re import sub, findall
+import argparse
+import sys
+
+parser = argparse.ArgumentParser(description="Finds modules of contiguous genes that match the genes present on the NCBI plasmid database (the comparisons are made at protein level)")
+parser.add_argument('-faa', action="store", dest="faa_files")
+parser.add_argument('-gff', action="store", dest="gff_files")
+parser.add_argument('-db', action="store", dest="db")
+parser.add_argument('-out', action="store", dest="outdir")
+par = parser.parse_args()
+
+if ((par.faa_files is None) or (par.gff_files is None) or (par.db is None) or (par.outdir is None)):
+    parser.print_help()
+    sys.exit(0)
+
+#################################################
+##I perform the blast searches on the proteomes##
+#################################################
+
+#I create the outdir directory
+if not path.exists(outdir):
+    makedirs(outdir)
+
+#I create the directory 01-searches // otherwise userach will crash
+if not path.exists(outdir+"/01-searches"):
+    makedirs(outdir+"/01-searches")
+
+#I create the db for the plasmid proteins
+cmd="usearch8 -makeudb_usearch "+db+" -output "+outdir+"/01-searches/plasmid_prot_db.udb"
+call(cmd,shell="True")
+
+#I run the searches with usearch and parallel
+dir_proteomes=faa_files
+
+cmd="ls "+dir_proteomes+" | grep faa"
+list_faa=check_output(cmd,shell="True").strip("\n").split("\n")
+
+with open(outdir+"/01-searches/commands.txt", 'w') as outf:
+    for faa in list_faa:
+        faa_root=sub(".faa","",faa)
+        cmd="usearch8 -usearch_local "+dir_proteomes+"/"+faa+" -threads 1 -db "+outdir+"/01-searches/plasmid_prot_db.udb -id 0.5 -userout "+outdir+"/01-searches/"+faa_root+"_results.txt -userfields query+target+id+alnlen+mism+opens+qlo+qhi+tlo+thi+evalue+bits+ql+tl\n"
+        outf.write(cmd)
+
+
+cmd="parallel -j 10 < "+outdir+"/01-searches/commands.txt"
+call(cmd,shell="True")
+
+##I take all the _results files and I analyze them
+
+#I create the directory 02-explode_info
+if not path.exists(outdir+"/02-explode_info"):
+    makedirs(outdir+"/02-explode_info")
+
+
+#I load in memory the data about the genetic elements
+
+#I create an empty dictionary
+container={}
+container["data-ids"]={}
+
+#I get all the lines that start with a ">" from the file with the plasmid proteins
+list_data=check_output("cat "+db+" | grep \">\"",shell="True").strip("\n").split("\n")
+
+for element in list_data:
+    data=element.split("|")
+    container["data-ids"][data[1]]=data[-1]
+
+for faa in list_faa:
+    faa_root=sub(".faa","",faa)
+    container["searches"]={}
+    container["gff-data"]={}
+    container["len_contigs"]={}
+
+    #I read the results and I store them
+    with open(outdir+"/01-searches/"+faa_root+"_results.txt", 'r') as inf:
+        container["searches"][faa_root]={}
+        for line in inf:
+            current_data=line.split("\t")
+            protein=current_data[0]
+            hit=current_data[1]
+            explode_hit=hit.split("|")
+            gi=explode_hit[1]
+            long_name="--"
+            if gi in container["data-ids"]:
+                long_name=gi
+                long_name=long_name+","+str(container["data-ids"][gi])
+            else:
+                print "::[warning] I cannot find this ID in my dictionary\n"
+
+            container["searches"][faa_root][protein]=long_name
+
+
+    #I load in memory the information from the gff file
+    with open(gff_files+"/"+faa_root+".gff", 'r') as inf:
+        counter=0
+        for line in inf:
+            if line.startswith("# Sequence Data:"):
+                #print line
+                data_contig=re.split(";|=",line.replace("\"","").rstrip())
+                #print data_contig
+                #print data_contig[5],data_contig[3]
+                container["len_contigs"][data_contig[5]]=data_contig[3]
+                container["gff-data"][data_contig[5]]={}
+                #print data_contig
+            elif line.startswith("# Model Data:"):
+                continue
+            elif line.startswith("##"):
+                continue
+            else:
+                data=line.split("\t")
+                contig=data[0]
+                start=data[3]
+                stop=data[4]
+                strand=data[6]
+                counter=counter+1
+                id_gene=contig.split("_")[0]+"_seq"+str(counter)
+                #print contig+"%",start+"%", stop+"%", strand+"%", id_gene
+                if id_gene in dict.keys(container["searches"][faa_root]):
+                    container["gff-data"][contig][id_gene]={}
+                    descr=container["searches"][faa_root][id_gene]
+                    descrB=id_gene+","+start+","+stop+","+strand+","+descr+"\n"
+                    container["gff-data"][contig][id_gene]=descrB
+
+    with open(outdir+'/02-explode_info/'+faa_root+".txt", 'w') as outf:
+        for contig in sorted(dict.keys(container["gff-data"])):
+            gen_elements=dict.keys(container["gff-data"][contig])
+            for gene in sorted(dict.keys(container["gff-data"][contig])):
+                outf.write(contig+","+container["len_contigs"][contig]+","+container["gff-data"][contig][gene])
+
+'''
+I try to find modules of mobile elements. 3 outputs:
+*._list-prokka.txt -- list of all the mobile elements present in a given genome (prokka ids)
+*._list-gi.txt -- list of all the mobile elements present in a given genome (gi ids)
+*._mod.txt -- list of all the modules found in a given genome (gi ids)
+'''
+
+if not path.exists(outdir+"/03-lists_elements/"):
+    makedirs(outdir+"/03-lists_elements/")
+
+list_corresp_gi_prokka_modules={}
+
+for faa in list_faa:
+    faa_root=sub(".faa","",faa)
+    data_elements={}
+
+    with open(outdir+'/02-explode_info/'+faa_root+".txt", 'r') as inf:
+        for line in inf:
+            data=line.split(",")
+            id_element=data[2]
+            gi=data[6]
+            data_elements[id_element]=gi
+
+    with open(outdir+'/03-lists_elements/'+faa_root+"_list-prokka.txt", 'w') as outf:
+        for element in sorted(data_elements.keys()):
+            outf.write(element+"\n")
+
+    with open(outdir+'/03-lists_elements/'+faa_root+"_list-gi.txt", 'w') as outf:
+        for element in sorted(data_elements.keys()):
+            outf.write(data_elements[element]+"\n")
+
+    list_modules={}
+    list_corresp_gi_prokka_modules[faa_root]={}
+    list_strands=["+","-"]
+    for strand_rule in list_strands:
+        flag_module=0
+        with open(gff_files+'/'+faa_root+".gff", 'r') as inf:
+            counter=0
+            module=""
+            module_our_ids=""
+            for line in inf:
+                if line.startswith("#"):
+                    continue
+                else:
+                    #print line
+                    data=line.split("\t")
+                    contig=data[0]
+                    start=data[3]
+                    stop=data[4]
+                    strand=data[6]
+                    counter=counter+1
+                    id_gene=contig.split("_")[0]+"_seq"+str(counter)
+                    if(strand!=strand_rule):
+                        continue
+                    if id_gene in data_elements:
+                        if flag_module==0:
+                            flag_module=1
+                            module=data_elements[id_gene]
+                            module_our_ids=id_gene
+                        elif flag_module==1:
+                            module=module+":"+data_elements[id_gene]
+                            module_our_ids=module_our_ids+":"+id_gene
+                        else:
+                            print "::[warning] the flag_module variable is behaving erratically\n"
+                    else:
+                        if flag_module==1:
+                            list_modules[module]=1
+                            list_corresp_gi_prokka_modules[faa_root][module]={}
+                            list_corresp_gi_prokka_modules[faa_root][module]=module_our_ids
+                            flag_module=0
+
+    with open(outdir+'/03-lists_elements/'+faa_root+"_mod.txt", 'w') as outf:
+        for module in list_modules:
+            outf.write(module+"\n")
+
+##Now I calculate in how many genome each element is present and of how many genes is constituted. Then I can analyze the results with R
+
+if not path.exists(outdir+"/04-characterize_elements/"):
+    makedirs(outdir+"/04-characterize_elements/")
+
+container["elements"]={}
+
+for faa in list_faa:
+    faa_root=sub(".faa","",faa)
+    with open(outdir+'/03-lists_elements/'+faa_root+"_mod.txt", 'r') as inf:
+        for line in inf:
+            name=line.rstrip("\n")
+            data=line.split(":")
+            len_element=len(data)
+            if name not in dict.keys(container["elements"]):
+                container["elements"][name]={}
+                container["elements"][name]["length"]={}
+                container["elements"][name]["length"]=len_element
+                container["elements"][name]["genomes"]={}
+                container["elements"][name]["genomes"][faa_root]=1
+            else:
+                container["elements"][name]["genomes"][faa_root]=1
+
+with open(outdir+'/04-characterize_elements/details_elements.txt', 'w') as outf:
+    outf.write("element,length,n_genomes,genomes\n")
+    for key in dict.keys(container["elements"]):
+        genomes=sorted(dict.keys(container["elements"][key]["genomes"]))
+        n_genomes=len(genomes)
+        outf.write(key+","+str(container["elements"][key]["length"])+","+str(n_genomes)+","+" ".join(genomes)+"\n")
+
+with open(outdir+'/04-characterize_elements/details_elements_DetailsGeneticElements.txt', 'w') as outf:
+    outf.write("element,ids_genomes,length,n_genomes,genomes\n")
+    for key in dict.keys(container["elements"]):
+        genomes=sorted(dict.keys(container["elements"][key]["genomes"]))
+        situation_genomes=[]
+        for g in genomes:
+            module_our_ids=list_corresp_gi_prokka_modules[g][key]
+            situation_genome=g+"="+module_our_ids
+            situation_genomes.append(situation_genome)
+
+        n_genomes=len(genomes)
+        outf.write(key+","+";".join(situation_genomes)+","+str(container["elements"][key]["length"])+","+str(n_genomes)+","+" ".join(genomes)+"\n")
+
+
+#I create images of the networks of exchanged elements between isolates and between achromobacter and other genera
+if not path.exists(outdir+"/05-network/"):
+    makedirs(outdir+"/05-network/")
+
+links={}
+with open(outdir+'/05-network/network.txt', 'w') as outf:
+    outf.write("node1,node2,links\n")
+    with open(outdir+'/04-characterize_elements/details_elements.txt', 'r') as inf:
+        inf.next()
+        for line in inf:
+            data=line.rstrip("\n").split(",")
+            if int(data[1]) >=5:
+                strains=data[3].split(" ")
+                for i in range(len(strains)):
+                    for j in range(i,len(strains)):
+                        if strains[i]==strains[j]:
+                            continue
+                        link="&".join(sorted([strains[i],strains[j]]))
+                        if link in links:
+                            links[link]=links[link]+1
+                        else:
+                            links[link]=1
+
+    for link in links:
+        list_items=link.split("&")
+        outf.write(list_items[0]+","+list_items[1]+","+str(links[link])+"\n")
+
+
+if not path.exists(outdir+"/06-network_genera/"):
+    makedirs(outdir+"/06-network_genera/")
+
+
+##I find where the elements come from -- all species
+
+cmd="cat "+outdir+"/02-explode_info/* > "+outdir+"/06-network_genera/full_data_all_elements.txt"
+call(cmd,shell="True")
+
+elements_species={}
+
+check_species={}
+
+with open(outdir+'/06-network_genera/full_data_all_elements.txt', 'r') as inf:
+    for line in inf:
+        info=line.split(",")
+        gi=info[6]
+        u="%".join(findall("\[([A-Za-z0-9. \-\(\)\+\=\/\_\:\[\]]+)\]$",line))
+        v=u.split(" ")
+        z=v[0]
+        z=z.replace("[","").replace("]","")
+        elements_species[gi]=z
+        if z in check_species:
+            check_species[z]=check_species[z]+" "+str(gi)
+        else:
+            check_species[z]=gi
+
+
+links={}
+with open(outdir+'/06-network_genera/network_genera_all_achromo.txt', 'w') as outf:
+    outf.write("node1,node2,links\n")
+    with open(outdir+'/04-characterize_elements/details_elements.txt', 'r') as inf:
+        inf.next()
+        for line in inf:
+            data=line.rstrip("\n").split(",")
+            if int(data[1]) >=5:
+                element=data[0]
+                species={}
+                for single_element in element.split(":"):
+                    current_species=elements_species[single_element]
+                    species[current_species]=1
+                for current_sp in species:
+                    link="Myspecies&"+str(current_sp)
+                    if link in links:
+                        links[link]=links[link]+1
+                    else:
+                        links[link]=1
+
+    for link in links:
+        list_items=link.split("&")
+        outf.write(list_items[0]+","+list_items[1]+","+str(links[link])+"\n")

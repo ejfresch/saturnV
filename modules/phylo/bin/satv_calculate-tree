@@ -7,10 +7,10 @@ $n_cpu=1;
 $bootstraps=1000;
 $method="raxml";
 
-%avail_methods={
-  "ft"=> 1;
-  "raxml"=>1;
-}
+%avail_methods=(
+  "ft"=> 1,
+  "raxml"=>1,
+);
 
 GetOptions ("p=s" => \$file_in,"c=s" => \$n_cpu,"b=s" => \$bootstraps,"m=s" => \$method) or die("::usage: $0 -p <phylip_file> -m <method[raxml|ft]> -c <n_cpu> -b <n_bootstraps>\n");
 
@@ -19,7 +19,7 @@ if($file_in eq ""){
     exit();
 }
 
-if(!(exists($avail_method{$method}))){
+if(!(exists($avail_methods{$method}))){
     print "::usage: $0 -p <phylip_file> -m <method[raxml|ft]> -c <n_cpu> -b <n_bootstraps>";
     exit();
 }

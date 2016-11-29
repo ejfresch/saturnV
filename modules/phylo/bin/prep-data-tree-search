@@ -11,7 +11,7 @@ if($directory eq ""){
     exit();
 }
 
-$path_to_phyutil="~/tasks/achromo/sw/phyutility/";
+$path_to_phyutil="/home/lfreschi/tasks/achromo/sw/phyutility/";
 
 if(!(-e "${path_to_phyutil}/phyutility.jar")){
   print "--I do not know where phyutility.jar is installed.\n Please open $0 and modify the variable \$path_to_phyutil\n Thanks!\n";
@@ -19,9 +19,9 @@ if(!(-e "${path_to_phyutil}/phyutility.jar")){
 }
 
 #concatenating trimmed alignments
-$cmd="java -jar ${path_to_phyutil}/phyutility.jar -concat -in ${directory}/*.trim.aln -out all.trim.aln.nex"
+$cmd="java -jar ${path_to_phyutil}/phyutility.jar -concat -in ${directory}/*.trim.aln -out all.trim.aln.nex";
 system($cmd);
 
 #I converted the nex file to phy
-$cmd="seqmagick.py convert --output-format phylip all.trim.aln.nex all.trim.aln.phy"
+$cmd="seqmagick.py convert --output-format phylip all.trim.aln.nex all.trim.aln.phy";
 system($cmd);
