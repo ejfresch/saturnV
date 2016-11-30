@@ -23,6 +23,7 @@ TABLE OF CONTENTS
 
 
 0 - INTRODUCTION
+------------------
 SaturnV is a software that allows to compare two or more genomes in order to determine and study the core and accessory genes. The core genes are the set of genes that are present in all genomes of a given dataset. Unique genes (those present in one genome only) and flexible genes (those present in more than one genome) constitute the accessory genome.
 
 SaturnV takes .fasta files as input (assembled genomes) and produces a matrix of presence/abscence for all the genes that constitute the pangenome of the species considered.
@@ -66,7 +67,7 @@ cd saturnV
 --step 2: run the installer
 ```
 ./install -d /home/lfreschi/sw/saturnv/ -m core
-``
+```
 
 --step3: check that everything is OK.
 to check that everything went well, type satv_ and then hit the tab key twice. You should be able to see the whole list of SaturnV commands:
