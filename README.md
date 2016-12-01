@@ -32,7 +32,7 @@ SaturnV was mainly written in Perl. Some parts are written in R and python.
 Here is the complete list of dependencies that we are asking you to install in order to run the core module of SaturnV:
 * perl + 3 perl libraries (Getopt::Long, Parallel::ForkManager, Graph)
 * prokka (http://www.vicbioinformatics.com/software.prokka.shtml)
-* usearch (http://www.drive5.com/usearch/ -- remember to download v8.x AND to rename the executable usearch8.x -> usearch8)
+* usearch (http://www.drive5.com/usearch/ -- remember to download v8.x AND to rename the executable usearch8)
 * GNU parallel (https://www.gnu.org/software/parallel/)
 * seqtk (https://github.com/lh3/seqtk)
 
