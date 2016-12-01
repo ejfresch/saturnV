@@ -51,7 +51,7 @@ Other softwares you might want to insall:
 
 If you have a Debian/Ubuntu installation (maning you have the command "apt-get" installed in your system), you can install most of the dependencies using this command: 
 ```
-apt-get install libparallel-forkmanager-perl libgraph-perl libgetopt-simple-perl parallel seqtk
+sudo apt-get install libparallel-forkmanager-perl libgraph-perl libgetopt-simple-perl parallel seqtk
 ```
 
 You just need to install prokka and usearch by yourself.
@@ -59,7 +59,9 @@ You just need to install prokka and usearch by yourself.
 
 NOTE: SaturnV will use usearch as its default method to compare sequences. However, the same task can be performed by other softwares (i.e. blastp, last). SaturnV is ready to allow you to choose the software you are more confortable with. But you need to install these softwares! :)
 
-Here is an example of a typical installation process:
+
+
+If yo installed all the dependencies you can proceed with the installation of SaturnV:
 
 --step1: copy the saturnV repository to your computer. Open a terminal emulator, and type:
 ```
@@ -73,7 +75,7 @@ go into the directory saturnV with the command:
 cd saturnV
 ```
 
---step 2: run the installer and check if some dependencines are missing. If so, please install them and then rerun the installer
+--step 2: run the installer:
 ```
 ./install -d /home/lfreschi/sw/saturnv/ -m core
 ```
