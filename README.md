@@ -24,15 +24,14 @@ TABLE OF CONTENTS
 
 0 - INTRODUCTION
 ------------------
-SaturnV is a software that allows to compare two or more genomes in order to determine and study the core and accessory genes. The core genes are the set of genes that are present in all genomes of a given dataset. Unique genes (those present in one genome only) and flexible genes (those present in more than one genome) constitute the accessory genome.
+SaturnV is a software that allows to compare two or more genomes in order to determine and study the core and accessory genes. The core genes are the set of genes that are present in all genomes of a given dataset. Unique genes (those present in one genome only) and flexible genes (those present in more than one genome) constitute the accessory genes.
 
 SaturnV takes .fasta files as input (assembled genomes) and produces a matrix of presence/abscence for all the genes that constitute the pangenome of the species considered.
 
-Our software is named after the rocket that brought humankind to the Moon in 1969. A bit like its space couterpart, SaturnV relies on several modules that have to function one after the other in order to achieve the objectives of the mission: determining, comparing and displaying core and accessory genomes.
+SaturnV is named after the rocket that brought humankind to the Moon in 1969. A bit like its space couterpart, SaturnV relies on several modules that have to function one after the other in order to achieve the objectives of the mission: determining, comparing and displaying core and accessory genes.
 
-<nerd_stuff>
-SaturnV was mainly written in Perl. Some parts are written in R.
-</nerd_stuff>
+
+SaturnV was mainly written in Perl. Some parts are written in R and python.
 
 
 1 - INSTALLATION
@@ -57,14 +56,14 @@ Here is an example of a typical installation process:
 git clone https://github.com/ejfresch/saturnV.git
 ```
 
-NOTE: you should have git installed! If it is not the case, please install it (hint: sudo atp-get install git).
+NOTE: you should have git installed! If it is not the case, please install it (hint for Debian/Ubuntu systems: sudo apt-get install git-core).
 
 go into the directory saturnV with the command:
 ```
 cd saturnV
 ```
 
---step 2: run the installer
+--step 2: run the installer and check if some dependencines are missing. If so, please install them and then rerun the installer
 ```
 ./install -d /home/lfreschi/sw/saturnv/ -m core
 ```
