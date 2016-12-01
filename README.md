@@ -14,12 +14,14 @@ Copyright 2015-2017 -- Luca Freschi, Antony T. Vincent, Julie Jeukens, Jean-Guil
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+
 TABLE OF CONTENTS
 
 0. Introduction
 1. Installation
 2. How to determine the core and accessory genomes
 3. How to cite SaturnV
+
 
 
 0 - INTRODUCTION
@@ -38,16 +40,24 @@ SaturnV was mainly written in Perl. Some parts are written in R and python.
 -----------------
 Here is the complete list of dependencies that we are asking you to install in order to run the core module of SaturnV:
 * perl + 3 perl libraries (Getopt::Long, Parallel::ForkManager, Graph)
-* prokka
-* usearch (v8.x)
-* GNU parallel
+* prokka (http://www.vicbioinformatics.com/software.prokka.shtml)
+* usearch (http://www.drive5.com/usearch/ -- remember to download v8.x)
+* GNU parallel (https://www.gnu.org/software/parallel/)
+* seqtk (https://github.com/lh3/seqtk)
 
 Other softwares you might want to insall:
-* last
-* blastp
-* diamond
+* last (http://last.cbrc.jp)
+* blastp (ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)
 
-NOTE: SaturnV will use usearch as its default method to compare sequences. However, the same task can be performed by other softwares (usearch, blastp, diamond). SaturnV is ready to allow you to choose the software you are more confortable with.
+If you have a Debian/Ubuntu installation (maning you have the command "apt-get" installed in your system), you can install most of the dependencies using this command: 
+```
+apt-get install libparallel-forkmanager-perl libgraph-perl libgetopt-simple-perl parallel seqtk
+```
+
+You just need to install prokka and usearch by yourself.
+
+
+NOTE: SaturnV will use usearch as its default method to compare sequences. However, the same task can be performed by other softwares (i.e. blastp, last). SaturnV is ready to allow you to choose the software you are more confortable with. But you need to install these softwares! :)
 
 Here is an example of a typical installation process:
 
@@ -93,12 +103,12 @@ SaturnV comes with a small dataset of Achromobacter genomes (n = 3). You can fin
 
 I create the working directory
 ```
-mkdir satv_results
+mkdir satv_test
 ```
 
 I move into it
 ```
-cd satv_results
+cd satv_test
 ```
 
 I create the genomes/ directory
@@ -107,6 +117,9 @@ mkdir genomes
 ```
 
 I copy the genoms inside the genome directory
+
+NOTE: the files containing the genome assemblies MUST have the extension .fasta
+
 general synthax: cp <directory_where_you_installed_saturnV>/examples/achromo/* genomes/
 in my case:
 ```
@@ -116,22 +129,26 @@ cp ~/sw/saturnv/examples/achromo/* genomes/
 
 --step2: launch the analysis
 
-general synthax: satv_launch.pl -d <directory_genomes_to_analyze> -c <cpus_available_for_multithreading> -ann <annotation_software[prokka|prodigal]> -m <clustering_method[lazy|strict|strictest|centroids]> -a <search_algorithm[usearch|blast|last|diamond]> -i <min_perc_identity_orthologs> -ip <min_perc_identity_paralogs>
+general synthax: satv_launch -d <directory_genomes_to_analyze> -c <cpus_available_for_multithreading> -ann <annotation_software[prokka|prodigal]> -m <comparison_method[laziest|laziest-bh|lazy|lazy-bh|strictest|centroids]> -a <algorithm[usearch|blast|last]> -k <expression> -i <min_perc_identity_orthologs> -ip <min_perc_identity_paralogs>
+
+
 ```
-satv_launch.pl -d genomes/ -c 2 -ann prodigal -m lazy -a usearch -i 50 -ip 100
+satv_launch -d genomes/ -c 2 -ann prodigal -m lazy -a usearch -i 50 -ip 100
 ```
 
 
 --step3: look at the results
 
-the main output is the table_linked5_<method>.tsv. When we launched saturnV, we specified to use the strict method for the clustering step, so the file name will be table_linked5_strict.tsv.
+the main output is the table_linked5_<method>.tsv. When we launched saturnV, we specified to use the strict method for the clustering step, so the file name will be table_linked5_lazy.tsv.
 
 This file is a tab separated value (.tsv) file. In each row there is a gene and in each column there is its ortholog in another genome.
 
-Another output is the annotation. By typing the command "ls" you will see that there are 3 folders, each one with the name of one of the genomes we analyzed. These folders contain the annotation.
+Another output is the annotation. By typing the command "ls" you will see that there are 3 folders, each one with the name of one of the genomes we analyzed. These folders contain the annotation (.gff file with the annotations, .faa with the proteins and so on).
 
-NOTE: all files MUST have the extension .fasta
+
 
 3 - HOW TO CITE SATURNV
 -----------------------
-If you use SaturnV for your publications, please 
+If you use SaturnV to perform some data analysis for a scientific publication, please cite it using the URL of the project: https://github.com/ejfresch/saturnV. 
+
+NOTE: We are in the process of writing a paper to describe how SaturnV works and how it compares to other softwares that were written for the same purposes.
