@@ -48,11 +48,11 @@ sudo apt-get install libparallel-forkmanager-perl libgraph-perl libgetopt-simple
 You just need to install prokka and usearch by yourself.
 
 
-NOTE: SaturnV will use usearch as its default method to compare sequences. However, the same task can be performed by other softwares (i.e. blastp, last). SaturnV is ready to allow you to choose the software you are more confortable with. But you need to install these softwares! :)
+NOTE: SaturnV will use usearch as its default method to compare sequences. However, the same task can be performed by other softwares (i.e. blastp, last). SaturnV is ready to allow you to choose the software you are more confortable with. But you need to install these softwares too! :)
 
 
 
-If yo installed all the dependencies you can proceed with the installation of SaturnV:
+If you installed all the dependencies, you can proceed with the installation of SaturnV:
 
 --step1: copy the saturnV repository to your computer. Open a terminal emulator, and type:
 ```
