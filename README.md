@@ -90,7 +90,7 @@ If you are in trouble or you think you have followed all these steps but you jus
 2 - HOW TO DETERMINE THE CORE AND ACCESSORY GENOMES
 ----------------------------------------------------
 
-SaturnV comes with a small dataset of Achromobacter genomes (n = 3). You can find them into the directory examples/achromo/. We will use this dataset to go through the SaturnV commands and show you how you can use SaturnV to determine core and accessory genomes.
+SaturnV comes with a small dataset of Achromobacter genomes (n = 3). You can find them onto the directory examples/achromo/. We will use this dataset to go through the SaturnV commands and show you how you can use SaturnV to determine core and accessory genes.
 
 --step1: create a working directory for the new analysis and create the subdirectory genomes/. Then copy the genomes you want to analyze into genomes/:
 
