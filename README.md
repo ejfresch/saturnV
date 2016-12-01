@@ -15,15 +15,6 @@ Copyright 2015-2017 -- Luca Freschi, Antony T. Vincent, Julie Jeukens, Jean-Guil
 
 
 
-TABLE OF CONTENTS
-
-0. Introduction
-1. Installation
-2. How to determine the core and accessory genomes
-3. How to cite SaturnV
-
-
-
 0 - INTRODUCTION
 ------------------
 SaturnV is a software that allows to compare two or more genomes in order to determine and study the core and accessory genes. The core genes are the set of genes that are present in all genomes of a given dataset. Unique genes (those present in one genome only) and flexible genes (those present in more than one genome) constitute the accessory genes.
