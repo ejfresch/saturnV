@@ -113,8 +113,8 @@ I copy the genoms inside the genome directory
 
 NOTE: the files containing the genome assemblies MUST have the extension .fasta
 
-general synthax: cp <directory_where_you_installed_saturnV>/examples/achromo/* genomes/
-in my case:
+<pre>general synthax: cp <directory_where_you_installed_saturnV>/examples/achromo/* genomes/</pre>
+In my case:
 ```
 cp ~/sw/saturnv/examples/achromo/* genomes/
 ```
@@ -122,8 +122,8 @@ cp ~/sw/saturnv/examples/achromo/* genomes/
 
 --step2: launch the analysis
 
-general synthax: satv_launch -d <directory_genomes_to_analyze> -c <cpus_available_for_multithreading> -ann <annotation_software[prokka|prodigal]> -m <comparison_method[laziest|laziest-bh|lazy|lazy-bh|strictest|centroids]> -a <algorithm[usearch|blast|last]> -k <expression> -i <min_perc_identity_orthologs> -ip <min_perc_identity_paralogs>
-
+<pre>general synthax: satv_launch -d <directory_genomes_to_analyze> -c <cpus_available_for_multithreading> -ann <annotation_software[prokka|prodigal]> -m <comparison_method[laziest|laziest-bh|lazy|lazy-bh|strictest|centroids]> -a <algorithm[usearch|blast|last]> -k <expression> -i <min_perc_identity_orthologs> -ip <min_perc_identity_paralogs>
+</pre>
 
 ```
 satv_launch -d genomes/ -c 2 -ann prodigal -m lazy -a usearch -i 50 -ip 100
@@ -132,7 +132,7 @@ satv_launch -d genomes/ -c 2 -ann prodigal -m lazy -a usearch -i 50 -ip 100
 
 --step3: look at the results
 
-the main output is the table_linked5_<method>.tsv. When we launched saturnV, we specified to use the strict method for the clustering step, so the file name will be table_linked5_lazy.tsv.
+<pre>the main output is the table_linked5_<method>.tsv. When we launched saturnV, we specified to use the strict method for the clustering step, so the file name will be table_linked5_lazy.tsv.</pre>
 
 This file is a tab separated value (.tsv) file. In each row there is a gene and in each column there is its ortholog in another genome.
 
