@@ -39,15 +39,15 @@ SaturnV was mainly written in Perl. Some parts are written in R and python.
 Here is the complete list of dependencies that we are asking you to install in order to run the core module of SaturnV:
 * perl + 3 perl libraries (Getopt::Long, Parallel::ForkManager, Graph)
 * prokka
-* last
+* usearch (v8.x)
 * GNU parallel
 
 Other softwares you might want to insall:
-* usearch (version 8.x)
+* last
 * blastp
 * diamond
 
-NOTE: SaturnV will use last as its default method to compare sequences. However, the same task can be performed by other softwares (usearch, blastp, diamond). SaturnV is ready to allow you to choose the software you are more confortable with.
+NOTE: SaturnV will use usearch as its default method to compare sequences. However, the same task can be performed by other softwares (usearch, blastp, diamond). SaturnV is ready to allow you to choose the software you are more confortable with.
 
 Here is an example of a typical installation process:
 
@@ -73,9 +73,11 @@ to check that everything went well, type satv_ and then hit the tab key twice. Y
 
 ```
 lfreschi@katak:~/tasks/pangenome/test_saturn/saturnv> satv_
-satv_build-mosaic.pl                     satv_extract-ID-by-coords.pl             satv_reconstruct-mosaic.pl
-satv_check-distrib-scaffolds.R           satv_extract-shared.pl                   satv_rename-strains.pl
-[...the list continues...]
+satv_generate_list_genomes              satv_search-pangenome-centroids         satv_search-pangenome-lazy-best-hit
+satv_launch                             satv_search-pangenome-laziest           satv_search-pangenome-strictest
+satv_prodigal-driver                    satv_search-pangenome-laziest-best-hit  satv_trim-name-scaffolds
+satv_prokka-driver                      satv_search-pangenome-lazy 
+[...the list continues if you installed two or more modules...]
 ```
 
 If you are in trouble or you think you have followed all these steps but you just got some complicated error message, just write a message to l.freschi@gmail.com
@@ -114,9 +116,9 @@ cp ~/sw/saturnv/examples/achromo/* genomes/
 
 --step2: launch the analysis
 
-general synthax: satv_launch.pl -d <directory_genomes_to_analyze> -c <cpus_available_for_multithreading> -ann <annotation_software[prokka|prodigal]> -m <clustering_method[lazy|strict|strictest|centroids]> -a <search_algorithm[usearch|blast]> -i <min_perc_identity_orthologs> -ip <min_perc_identity_paralogs>
+general synthax: satv_launch.pl -d <directory_genomes_to_analyze> -c <cpus_available_for_multithreading> -ann <annotation_software[prokka|prodigal]> -m <clustering_method[lazy|strict|strictest|centroids]> -a <search_algorithm[usearch|blast|last|diamond]> -i <min_perc_identity_orthologs> -ip <min_perc_identity_paralogs>
 ```
-satv_launch.pl -d genomes/ -c 2 -ann prodigal -m strict -a usearch -i 50 -ip 100
+satv_launch.pl -d genomes/ -c 2 -ann prodigal -m lazy -a usearch -i 50 -ip 100
 ```
 
 
