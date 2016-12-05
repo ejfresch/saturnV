@@ -21,7 +21,7 @@ SaturnV is a software that allows to compare two or more genomes in order to det
 
 SaturnV takes .fasta files as input (assembled genomes) and produces a matrix of presence/abscence for all the genes that constitute the pangenome of the species considered.
 
-SaturnV is named after the rocket that brought humankind to the Moon in 1969. A bit like its space couterpart, SaturnV relies on several modules that have to function one after the other in order to achieve the objectives of the mission: determining, comparing and displaying core and accessory genes.
+SaturnV is named after the rocket[1] that brought humankind to the Moon in 1969. A bit like its space couterpart, SaturnV relies on several modules that have to function one after the other in order to achieve the objectives of the mission: determining, comparing and displaying core and accessory genes.
 
 
 SaturnV was mainly written in Perl. Some parts are written in R and python.
@@ -36,7 +36,7 @@ Here is the complete list of dependencies that we are asking you to install in o
 * GNU parallel (https://www.gnu.org/software/parallel/)
 * seqtk (https://github.com/lh3/seqtk)
 
-Other softwares you might want to insall:
+Other softwares you might want to install:
 * last (http://last.cbrc.jp)
 * blastp (ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)
 
@@ -87,25 +87,22 @@ If you are in trouble or you think you have followed all these steps but you jus
 
 
 
-2 - HOW TO DETERMINE THE CORE AND ACCESSORY GENOMES
+2 - HOW TO DETERMINE THE CORE AND ACCESSORY GENES
 ----------------------------------------------------
 
 SaturnV comes with a small dataset of Achromobacter genomes (n = 3). You can find them onto the directory examples/achromo/. We will use this dataset to go through the SaturnV commands and show you how you can use SaturnV to determine core and accessory genes.
 
 --step1: create a working directory for the new analysis and create the subdirectory genomes/. Then copy the genomes you want to analyze into genomes/:
 
-I create the working directory
 ```
+#I create the working directory
 mkdir satv_test
-```
 
-I move into it
-```
+
+#I move into it
 cd satv_test
-```
 
-I create the genomes/ directory
-```
+#I create the genomes/ directory
 mkdir genomes
 ```
 
@@ -146,3 +143,7 @@ Another output is the annotation. By typing the command "ls" you will see that t
 If you use SaturnV to perform some data analysis for a scientific publication, please cite it using the URL of the project: https://github.com/ejfresch/saturnV. 
 
 NOTE: We are in the process of writing a paper to describe how SaturnV works and how it compares to other softwares that were written for the same purposes.
+
+4 - REFERENCES
+-----------------------
+[1] https://en.wikipedia.org/wiki/Saturn_V
