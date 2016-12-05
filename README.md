@@ -21,7 +21,7 @@ SaturnV is a software that allows to compare two or more genomes in order to det
 
 SaturnV takes .fasta files as input (assembled genomes) and produces a matrix of presence/abscence for all the genes that constitute the pangenome of the species considered.
 
-SaturnV is named after the rocket[1] that brought humankind to the Moon in 1969. A bit like its space couterpart, SaturnV relies on several modules that have to function one after the other in order to achieve the objectives of the mission: determining, comparing and displaying core and accessory genes.
+SaturnV is named after the rocket [1] that brought humankind to the Moon in 1969. A bit like its space couterpart, SaturnV relies on several modules that have to function one after the other in order to achieve the objectives of the mission: determining, comparing and displaying core and accessory genes.
 
 
 SaturnV was mainly written in Perl. Some parts are written in R and python.
@@ -98,19 +98,15 @@ SaturnV comes with a small dataset of Achromobacter genomes (n = 3). You can fin
 #I create the working directory
 mkdir satv_test
 
-
 #I move into it
 cd satv_test
 
 #I create the genomes/ directory
 mkdir genomes
-```
 
-I copy the genoms inside the genome directory
+#I copy the genoms inside the genome directory
+#NOTE: the files containing the genome assemblies MUST have the extension .fasta
 
-NOTE: the files containing the genome assemblies MUST have the extension .fasta
-
-```
 #general synthax: cp <directory_where_you_installed_saturnV>/examples/achromo/* genomes/
 
 #In my case:
