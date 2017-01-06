@@ -21,7 +21,7 @@ SaturnV is a software that allows to compare two or more genomes in order to det
 
 SaturnV takes .fasta files as input (assembled genomes) and produces a matrix of presence/abscence for all the genes that constitute the pangenome of the species considered.
 
-SaturnV is named after the rocket [1] that brought humankind to the Moon in 1969. A bit like its space couterpart, SaturnV relies on several modules that have to function one after the other in order to achieve the objectives of the mission: determining, comparing and displaying core and accessory genes.
+SaturnV is named after the [rocket][1] that brought humankind to the Moon in 1969. A bit like its space couterpart, SaturnV relies on several modules that have to function one after the other in order to achieve the objectives of the mission: determining, comparing and displaying core and accessory genes.
 
 
 SaturnV was mainly written in Perl. Some parts are written in R and python.

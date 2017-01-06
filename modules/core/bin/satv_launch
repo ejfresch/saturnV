@@ -6,7 +6,7 @@ use strict;
 my $dir_genomes="";
 my $n_cpu=1;
 my $alg="usearch";
-my $method="lazy-bh";
+my $method="lazy";
 my $ann="prodigal";
 my $start_run;
 my $end_run;

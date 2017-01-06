@@ -4,8 +4,18 @@
 print "::Creating links for *.faa files\n";
 `ln */*.faa .`;
 
+@faas=`ls *.faa`;
+chomp(@faas);
+for $faa (@faas){
+
+  $cmd="satv_remove-comments-fasta -in $faa";
+  system($cmd);
+  $cmd="mv ${faa}_nocomment.txt ${faa}";
+  system($cmd);
+
+}
+
 print "::Creating genomes_to_analyze.txt\n";
 `ls *.faa > genomes_to_analyze.txt`;
 
 print "::Bye\n";
-
