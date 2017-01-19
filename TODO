@@ -1,0 +1,3 @@
+
+[] write on the documentation that Prodigal cannot handle the sequences that are less than 20,000bp (Jean-Guillaume)
+  [] maybe it would be good to write down a log of what prodigal is doing instead of redirecting everything to /dev/null. Modify prodigal driver (Luca)

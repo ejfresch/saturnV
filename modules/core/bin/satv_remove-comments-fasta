@@ -1,0 +1,36 @@
+#!/usr/bin/perl
+
+use Getopt::Long;
+
+$file_in="";
+$field=0;
+$sep=" ";
+$chevron=0;
+
+GetOptions ("in=s" => \$file_in,"f=s" => \$field,"s=s" => \$sep,"b=s" => \$chevron) or die("::usage: $0 -in <fasta_in>\n");
+
+if(($file_in eq "") ){
+    print "::usage: $0 -in <fasta_in> -f <field[default=0]> -s <separator[default:space]> -b <add_angle_bracket[0|1;default=0]>\n";
+    exit();
+}
+
+open(OUT,">${file_in}_nocomment.txt");
+open(IN,"<${file_in}") or die ("--I cannot open the file ${file_in}\n");
+while($line=<IN>){
+  chomp($line);
+  if($line=~/^>/){
+    @data=split(/$sep/,$line);
+    if($chevron eq "1"){
+      print OUT ">".$data[$field]."\n";
+    }else{
+      print OUT $data[$field]."\n";
+    }
+  }
+  else{
+    print OUT $line."\n";
+
+  }
+
+}
+close(IN);
+close(OUT);
